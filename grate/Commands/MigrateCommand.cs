@@ -1,8 +1,5 @@
-﻿using System.Collections.Generic;
-using System.CommandLine;
+﻿using System.CommandLine;
 using System.CommandLine.NamingConventionBinder;
-using System.IO;
-using System.Linq;
 using grate.Configuration;
 using grate.Infrastructure;
 using grate.Migration;

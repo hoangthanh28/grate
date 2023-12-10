@@ -3,7 +3,6 @@ using FluentAssertions;
 using grate.Configuration;
 using grate.Migration;
 using TestCommon.TestInfrastructure;
-using Xunit;
 using static grate.Configuration.KnownFolderKeys;
 using static grate.Configuration.MigrationType;
 using static grate.Migration.ConnectionType;

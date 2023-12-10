@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using System.Transactions;
+﻿using System.Transactions;
 using Dapper;
 using FluentAssertions;
 using grate.Configuration;

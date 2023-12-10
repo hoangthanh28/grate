@@ -5,7 +5,6 @@ using System.CommandLine.Parsing;
 using FluentAssertions;
 using grate.Commands;
 using grate.Configuration;
-using Xunit;
 
 namespace Basic_tests.CommandLineParsing;
 

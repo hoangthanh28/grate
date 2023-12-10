@@ -6,7 +6,6 @@ using FluentAssertions;
 using grate.Commands;
 using grate.Configuration;
 using grate.Infrastructure;
-using Xunit;
 
 namespace Basic_tests.CommandLineParsing;
 
