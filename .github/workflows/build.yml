@@ -39,7 +39,10 @@ jobs:
   build-netcore-tool:
     needs: set-version-number
     name: Build .NET Core (global) tool
-
+    strategy:
+      fail-fast: false
+      matrix:
+        category: [ "grate.mariadb", "grate.oracle", "grate.postgresql" , "grate.sqlite", "grate.sqlserver"  ]
     runs-on: ubuntu-latest
 
     steps:
@@ -52,7 +55,7 @@ jobs:
       run: dotnet restore
     - name: Build
       #run: dotnet pack ./src/grate/grate.csproj -c release -p:PackAsTool=true -p:PackageOutputPath=/tmp/grate/nupkg
-      run: dotnet pack ./src/grate/grate.csproj -p:SelfContained=false -p:PackAsTool=true -p:PackageOutputPath=/tmp/grate/nupkg
+      run: dotnet pack ./src/${{ matrix.category }}/${{ matrix.category }}.csproj -p:SelfContained=false -p:PackAsTool=true -p:PackageOutputPath=/tmp/grate/nupkg
       env:
         VERSION: ${{ needs.set-version-number.outputs.nuGetVersion }}
       
