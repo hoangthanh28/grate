@@ -3,14 +3,14 @@
 I'm very happy that you are reading this page! Grate needs all the contributors it can get!
 I'll try to jot down a few notes on how to get started developing grate.
 
-## Get .NET 6
+## Get .NET 8
 
-Grate is built with .NET 6, which just shipped in early November 2021. You can get it [here](https://dotnet.microsoft.com/download/dotnet/6.0)
+Grate is built with .NET 8, which just shipped in early November 2023. You can get it [here](https://dotnet.microsoft.com/download/dotnet/8.0)
 and start building right away.
 
 ## Get (buy, borrow, rent, or whatever) a computer with an operating system on it
 
-.NET 6 runs on Windows, macOS or Linux. You choose what you like to use for development.
+.NET 8 runs on Windows, macOS or Linux. You choose what you like to use for development.
 
 ## Get Docker
 
@@ -28,7 +28,7 @@ git clone https://github.com/erikbra/grate.git
 
 ```
 > cd grate
-> dotnet test --framework net7.0
+> dotnet test --framework net8.0
 ```
 
 ## Build a self-contained executable (if you want)
@@ -38,7 +38,7 @@ might expect. But it's totally independent of .NET being installed on the runtim
 You can build a self-contained executable just using `dotnet build` (example from my mac below)
 
 ```
-> cd grate/grate
+> cd grate/src/grate.console
 > dotnet publish  -c release -r osx-x64 -o /tmp/grate
 ```
 
