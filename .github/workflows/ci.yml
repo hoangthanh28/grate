@@ -29,7 +29,7 @@ jobs:
       run: |
        dotnet restore -r linux-x64 grate.sln
     - name: Build
-      run: dotnet build -f net8.0 --no-restore --no-self-contained -r linux-x64 grate/grate.csproj -c release
+      run: dotnet build -f net8.0 --no-restore --no-self-contained -r linux-x64 src/grate/grate.csproj -c release
 
 
   analyze:
@@ -80,7 +80,7 @@ jobs:
     - name: Test
       run: |
         dotnet test \
-          unittests/${{ matrix.category }} \
+          tests/${{ matrix.category }} \
           --logger:"xunit;LogFilePath=/tmp/test-results/${{ matrix.category }}.xml" -- \
           -MaxCpuCount 2
       env:
