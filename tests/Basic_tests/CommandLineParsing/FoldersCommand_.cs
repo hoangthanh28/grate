@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
-using grate.Console.Commands;
 using grate.Configuration;
+using grate.Console.Commands;
 using grate.Migration;
 
 namespace Basic_tests.CommandLineParsing;

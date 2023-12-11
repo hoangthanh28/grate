@@ -3,11 +3,11 @@ using grate.Configuration;
 using grate.Infrastructure;
 using grate.Migration;
 using grate.Npgsql.Migration;
+using grate.PostgreSQL.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 using TestCommon.TestInfrastructure;
-
 namespace PostgreSQL.TestInfrastructure;
 
 public class PostgreSqlGrateTestContext : IGrateTestContext

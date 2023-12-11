@@ -2,9 +2,10 @@
 using System.Transactions;
 using grate.Configuration;
 using grate.Infrastructure;
+using grate.Migration;
+using grate.SqlServer.Infrastructure;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
-using grate.Migration;
 namespace grate.SqlServer.Migration;
 
 public class SqlServerDatabase : AnsiSqlDatabase

@@ -4,21 +4,21 @@ using System.CommandLine.Invocation;
 using System.CommandLine.NamingConventionBinder;
 using System.CommandLine.Parsing;
 using System.Reflection;
-using grate.Console.Commands;
+using grate;
 using grate.Configuration;
+using grate.Console.Commands;
+using grate.Console.Infrastructure;
 using grate.Exceptions;
 using grate.Infrastructure;
-using grate.Migration;
 using grate.MariaDb.Migration;
-using grate.Sqlite.Migration;
-using grate.Oracle.Migration;
+using grate.Migration;
 using grate.Npgsql.Migration;
+using grate.Oracle.Migration;
+using grate.Sqlite.Migration;
 using grate.SqlServer.Migration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
-using grate;
-using grate.Console.Infrastructure;
 namespace grate.Console;
 
 public static class Program
@@ -121,7 +121,7 @@ public static class Program
         services.AddTransient<IDbMigrator, DbMigrator>();
         services.AddTransient<IHashGenerator, HashGenerator>();
 
-        services.AddTransient<GrateMigrator, GrateMigrator>();
+        services.AddTransient<IGrateMigrator, GrateMigrator>();
 
         services.AddTransient<MariaDbDatabase>();
         services.AddTransient<OracleDatabase>();

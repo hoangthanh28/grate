@@ -3,8 +3,8 @@ using System.CommandLine.Invocation;
 using System.CommandLine.NamingConventionBinder;
 using System.CommandLine.Parsing;
 using FluentAssertions;
-using grate.Console.Commands;
 using grate.Configuration;
+using grate.Console.Commands;
 
 namespace Basic_tests.CommandLineParsing;
 

@@ -27,7 +27,7 @@ public class Everytime_scripts : TestCommon.Generic.Running_MigrationScripts.Eve
     {
         var db = TestConfig.RandomDatabase();
 
-        GrateMigrator? migrator;
+        IGrateMigrator? migrator;
 
         var parent = CreateRandomTempDirectory();
         var knownFolders = FoldersConfiguration.Default(null);

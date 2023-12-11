@@ -1,9 +1,10 @@
 ﻿using System.Data.Common;
 using System.Diagnostics;
 using grate.Infrastructure;
+using grate.MariaDb.Infrastructure;
+using grate.Migration;
 using Microsoft.Extensions.Logging;
 using MySqlConnector;
-using grate.Migration;
 namespace grate.MariaDb.Migration;
 
 public class MariaDbDatabase : AnsiSqlDatabase

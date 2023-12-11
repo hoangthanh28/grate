@@ -4,10 +4,11 @@ using System.Security.Claims;
 using Dapper;
 using grate.Configuration;
 using grate.Infrastructure;
+using grate.Migration;
+using grate.Oracle.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Oracle.ManagedDataAccess.Client;
 using static System.StringSplitOptions;
-using grate.Migration;
 namespace grate.Oracle.Migration;
 
 public class OracleDatabase : AnsiSqlDatabase

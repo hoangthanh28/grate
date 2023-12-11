@@ -1,13 +1,13 @@
 ﻿using System.Data.Common;
 using grate.Configuration;
 using grate.Infrastructure;
+using grate.MariaDb.Infrastructure;
+using grate.MariaDb.Migration;
 using grate.Migration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using grate.MariaDb.Migration;
 using MySqlConnector;
 using TestCommon.TestInfrastructure;
-
 namespace MariaDB.TestInfrastructure;
 
 public class MariaDbGrateTestContext : IGrateTestContext

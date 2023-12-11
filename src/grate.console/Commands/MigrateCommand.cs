@@ -1,15 +1,15 @@
 ﻿using System.CommandLine;
 using System.CommandLine.NamingConventionBinder;
+using grate.Configuration;
 using grate.Console.Configuration;
 using grate.Infrastructure;
 using grate.Migration;
 using static grate.Configuration.DefaultConfiguration;
-using grate.Configuration;
 namespace grate.Console.Commands;
 
 public sealed class MigrateCommand : RootCommand
 {
-    public MigrateCommand(GrateMigrator mi) : base("Migrates the database")
+    public MigrateCommand(IGrateMigrator mi) : base("Migrates the database")
     {
         Add(Database());
         Add(ConnectionString());
