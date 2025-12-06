@@ -9,7 +9,7 @@ COPY *.props ./
 COPY *.ruleset ./
 COPY src/ ./src/
 RUN dotnet publish --framework "$TARGETFRAMEWORK" --runtime "$RUNTIME" ./src/grate/grate.csproj \
-    -c release --self-contained -p:SelfContained=true /p:Version="$VERSION" /p:RuntimeIdentifiers="$RUNTIME" \
+    -c release --self-contained -p:SelfContained=true /p:Version="$VERSION" /p:RuntimeIdentifiers="" \
     -o /publish
 
 FROM --platform=$BUILDPLATFORM alpine:3 AS installer
