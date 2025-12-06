@@ -253,7 +253,9 @@ jobs:
     - name: Publish artifact ${{ matrix.arch }}
       if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
       run: |
-        gh release upload ${{ needs.set-version-number.outputs.semVer }} ./installers/msi/tmp/*.msi --clobber
+        name=grate-msi-${{ matrix.arch }}-${{ needs.set-version-number.outputs.nuGetVersion }}.msi
+        mv ./installers/msi/tmp/*.msi $name
+        gh release upload ${{ needs.set-version-number.outputs.semVer }} $name --clobber
       env:
         GH_TOKEN: ${{ github.token }}
 
@@ -362,7 +364,8 @@ jobs:
     - name: Publish artifact ${{ matrix.arch }}
       if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
       run: |
-        name=./installers/deb/grate_${{ needs.set-version-number.outputs.nuGetVersion }}-1_${{ steps.get-arch.outputs.arch }}.deb
+        nameOld=./installers/deb/grate_${{ needs.set-version-number.outputs.nuGetVersion }}-1_${{ steps.get-arch.outputs.arch }}.deb
+        name=grate_${{ needs.set-version-number.outputs.nuGetVersion }}_${{ steps.get-arch.outputs.arch }}.deb
         gh release upload ${{ needs.set-version-number.outputs.semVer }} $name --clobber
       env:
         GH_TOKEN: ${{ github.token }}
