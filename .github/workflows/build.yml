@@ -74,7 +74,7 @@ jobs:
         user: wokket # ${{ secrets.NUGET_USER }}
         
     - name: Push to Nuget.org
-      if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
+      #if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
       run: dotnet nuget push /tmp/grate/nupkg/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{secrets.NUGET_ORG_KEY}} --skip-duplicate
   
   build-nuget-package:
@@ -155,7 +155,7 @@ jobs:
 
 
     - name: Upload self-contained ${{ matrix.arch }}
-      if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
+      #if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
       run: |
         gh release upload ${{ needs.set-version-number.outputs.semVer }} ./publish/${{ matrix.arch }}/self-contained/* --clobber
       env:
@@ -193,7 +193,7 @@ jobs:
         TargetFramework: net9.0
 
     - name: Upload self-contained ${{ matrix.arch }}
-      if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
+      #if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
       run: |
         gh release upload ${{ needs.set-version-number.outputs.semVer }} ./publish/${{ matrix.arch }}/self-contained/* --clobber
       env:
@@ -226,7 +226,7 @@ jobs:
         VERSION: ${{ needs.set-version-number.outputs.nuGetVersion }}
 
     - name: Upload MSI ${{ matrix.arch }}
-      if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
+      #if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
       run: |
         gh release upload ${{ needs.set-version-number.outputs.semVer }} ./installers/msi/tmp/*.msi --clobber
       env:
