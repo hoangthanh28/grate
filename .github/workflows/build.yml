@@ -57,11 +57,9 @@ jobs:
         VERSION: ${{ needs.set-version-number.outputs.nuGetVersion }}
       
     - name: Upload published tool artifact
-      uses: actions/upload-artifact@v5
       if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
-      with:
-        name: grate-dotnet-tool-${{ needs.set-version-number.outputs.nuGetVersion }}
-        path: /tmp/grate/nupkg/*   
+      run: |
+        gh release upload ${{ needs.set-version-number.outputs.semVer }} /tmp/grate/nupkg/*.nupkg --clobber
     
       # Get a short-lived NuGet API key (Trusted Publishing https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing)
     - name: NuGet login (OIDC → temp API key)
@@ -151,11 +149,9 @@ jobs:
 
 
     - name: Upload self-contained ${{ matrix.arch }}
-      #if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
-      uses: actions/upload-artifact@v5
-      with:
-        name: grate-${{ matrix.arch }}-self-contained-${{ needs.set-version-number.outputs.nuGetVersion }}
-        path: ./publish/${{ matrix.arch }}/self-contained/*
+      if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
+      run: |
+        gh release upload ${{ needs.set-version-number.outputs.semVer }} ./publish/${{ matrix.arch }}/self-contained/* --clobber
     
 
   build-standalone-mac-arm64:
@@ -187,12 +183,9 @@ jobs:
         TargetFramework: net9.0
 
     - name: Upload self-contained ${{ matrix.arch }}
-      #if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
-      uses: actions/upload-artifact@v5
-      with:
-        name: grate-${{ matrix.arch }}-self-contained-${{ needs.set-version-number.outputs.nuGetVersion }}
-        path: ./publish/${{ matrix.arch }}/self-contained/*
-
+      if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
+      run: |
+        gh release upload ${{ needs.set-version-number.outputs.semVer }} ./publish/${{ matrix.arch }}/self-contained/* --clobber
   
   build-msi:
     name: Build MSI
@@ -219,10 +212,9 @@ jobs:
         VERSION: ${{ needs.set-version-number.outputs.nuGetVersion }}
 
     - name: Upload MSI ${{ matrix.arch }}
-      uses: actions/upload-artifact@v5
-      with:
-        name: grate-msi-${{ matrix.arch }}-${{ needs.set-version-number.outputs.nuGetVersion }}
-        path: ./installers/msi/tmp/*.msi
+      if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
+      run: |
+        gh release upload ${{ needs.set-version-number.outputs.semVer }} ./installers/msi/tmp/*.msi --clobber
 
 
   build-docker-image:
