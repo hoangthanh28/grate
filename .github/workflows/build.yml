@@ -60,6 +60,8 @@ jobs:
       if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
       run: |
         gh release upload ${{ needs.set-version-number.outputs.semVer }} /tmp/grate/nupkg/*.nupkg --clobber
+      env:
+        GH_TOKEN: ${{ github.token }}
     
       # Get a short-lived NuGet API key (Trusted Publishing https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing)
     - name: NuGet login (OIDC → temp API key)
@@ -152,6 +154,8 @@ jobs:
       if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
       run: |
         gh release upload ${{ needs.set-version-number.outputs.semVer }} ./publish/${{ matrix.arch }}/self-contained/* --clobber
+      env:
+        GH_TOKEN: ${{ github.token }}
     
 
   build-standalone-mac-arm64:
@@ -186,6 +190,8 @@ jobs:
       if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
       run: |
         gh release upload ${{ needs.set-version-number.outputs.semVer }} ./publish/${{ matrix.arch }}/self-contained/* --clobber
+      env:
+        GH_TOKEN: ${{ github.token }}
   
   build-msi:
     name: Build MSI
@@ -215,6 +221,8 @@ jobs:
       if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
       run: |
         gh release upload ${{ needs.set-version-number.outputs.semVer }} ./installers/msi/tmp/*.msi --clobber
+      env:
+        GH_TOKEN: ${{ github.token }}
 
 
   build-docker-image:
