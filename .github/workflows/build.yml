@@ -61,7 +61,8 @@ jobs:
     - name: Upload published tool artifact
       if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
       run: |
-        gh release upload ${{ needs.set-version-number.outputs.semVer }} /tmp/grate/nupkg/*.nupkg --clobber
+        zip -r grate-dotnet-tool-${{ needs.set-version-number.outputs.nuGetVersion }}.zip /tmp/grate/nupkg
+        gh release upload ${{ needs.set-version-number.outputs.semVer }} grate-dotnet-tool-*.zip --clobber
       env:
         GH_TOKEN: ${{ github.token }}
     
@@ -157,7 +158,9 @@ jobs:
     - name: Upload self-contained ${{ matrix.arch }}
       if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
       run: |
-        gh release upload ${{ needs.set-version-number.outputs.semVer }} ./publish/${{ matrix.arch }}/self-contained/* --clobber
+        name=grate-${{ matrix.arch }}-self-contained-${{ needs.set-version-number.outputs.nuGetVersion }}.zip
+        zip -r $name ./publish/${{ matrix.arch }}/self-contained
+        gh release upload ${{ needs.set-version-number.outputs.semVer }} $name --clobber
       env:
         GH_TOKEN: ${{ github.token }}
     
@@ -195,7 +198,9 @@ jobs:
     - name: Upload self-contained ${{ matrix.arch }}
       if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
       run: |
-        gh release upload ${{ needs.set-version-number.outputs.semVer }} ./publish/${{ matrix.arch }}/self-contained/* --clobber
+        name=grate-${{ matrix.arch }}-self-contained-${{ needs.set-version-number.outputs.nuGetVersion }}.zip
+        zip -r $name ./publish/${{ matrix.arch }}/self-contained
+        gh release upload ${{ needs.set-version-number.outputs.semVer }} $name --clobber
       env:
         GH_TOKEN: ${{ github.token }}
   
