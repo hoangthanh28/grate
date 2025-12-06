@@ -59,12 +59,12 @@ jobs:
         VERSION: ${{ needs.set-version-number.outputs.nuGetVersion }}
       
     - name: Upload published tool artifact
+      uses: actions/upload-artifact@v5
       if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
-      run: |
-        zip -r grate-dotnet-tool-${{ needs.set-version-number.outputs.nuGetVersion }}.zip /tmp/grate/nupkg
-        gh release upload ${{ needs.set-version-number.outputs.semVer }} grate-dotnet-tool-*.zip --clobber
-      env:
-        GH_TOKEN: ${{ github.token }}
+      with:
+        name: grate-dotnet-tool-${{ needs.set-version-number.outputs.nuGetVersion }}
+        path: /tmp/grate/nupkg/*
+
     
       # Get a short-lived NuGet API key (Trusted Publishing https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing)
     - name: NuGet login (OIDC → temp API key)
@@ -156,6 +156,13 @@ jobs:
 
 
     - name: Upload self-contained ${{ matrix.arch }}
+      #if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
+      uses: actions/upload-artifact@v5
+      with:
+        name: grate-${{ matrix.arch }}-self-contained-${{ needs.set-version-number.outputs.nuGetVersion }}
+        path: ./publish/${{ matrix.arch }}/self-contained/*
+
+    - name: Publish artifact ${{ matrix.arch }}
       if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
       run: |
         name=grate-${{ matrix.arch }}-self-contained-${{ needs.set-version-number.outputs.nuGetVersion }}.zip
@@ -163,7 +170,7 @@ jobs:
         gh release upload ${{ needs.set-version-number.outputs.semVer }} $name --clobber
       env:
         GH_TOKEN: ${{ github.token }}
-    
+
 
   build-standalone-mac-arm64:
     name: Build cli
@@ -196,6 +203,13 @@ jobs:
         TargetFramework: net9.0
 
     - name: Upload self-contained ${{ matrix.arch }}
+      #if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
+      uses: actions/upload-artifact@v5
+      with:
+        name: grate-${{ matrix.arch }}-self-contained-${{ needs.set-version-number.outputs.nuGetVersion }}
+        path: ./publish/${{ matrix.arch }}/self-contained/*
+    
+    - name: Publish artifact ${{ matrix.arch }}
       if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
       run: |
         name=grate-${{ matrix.arch }}-self-contained-${{ needs.set-version-number.outputs.nuGetVersion }}.zip
@@ -229,8 +243,14 @@ jobs:
       run: ./installers/msi/Create-Installer.ps1 -grateExe ./${{ matrix.arch }}/grate.exe -Version "${{ needs.set-version-number.outputs.nuGetVersion }}"
       env:
         VERSION: ${{ needs.set-version-number.outputs.nuGetVersion }}
-
+    
     - name: Upload MSI ${{ matrix.arch }}
+      uses: actions/upload-artifact@v5
+      with:
+        name: grate-msi-${{ matrix.arch }}-${{ needs.set-version-number.outputs.nuGetVersion }}
+        path: ./installers/msi/tmp/*.msi
+    
+    - name: Publish artifact ${{ matrix.arch }}
       if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
       run: |
         gh release upload ${{ needs.set-version-number.outputs.semVer }} ./installers/msi/tmp/*.msi --clobber
@@ -312,7 +332,8 @@ jobs:
     strategy:
       matrix:
         arch: [ "linux-arm64", "linux-x64" ]
-
+    permissions:
+      contents: write
     steps:
     - uses: actions/checkout@v5
     - uses: actions/download-artifact@v6
@@ -337,7 +358,14 @@ jobs:
       with:
         name: grate_${{ needs.set-version-number.outputs.nuGetVersion }}-1_${{ steps.get-arch.outputs.arch}}.deb
         path: ./installers/deb/grate_${{ needs.set-version-number.outputs.nuGetVersion }}-1_${{ steps.get-arch.outputs.arch }}.deb
-
+    
+    - name: Publish artifact ${{ matrix.arch }}
+      if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
+      run: |
+        name=./installers/deb/grate_${{ needs.set-version-number.outputs.nuGetVersion }}-1_${{ steps.get-arch.outputs.arch }}.deb
+        gh release upload ${{ needs.set-version-number.outputs.semVer }} $name --clobber
+      env:
+        GH_TOKEN: ${{ github.token }}
   test:
     name: Run tests
 
