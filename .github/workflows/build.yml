@@ -16,8 +16,7 @@ jobs:
     outputs:
       nuGetVersion: ${{ steps.gitversion.outputs.nuGetVersionV2 }}
       semVer: ${{ steps.gitversion.outputs.fullSemVer }}
-      is-release: ${{ steps.gitversion.outputs.CommitsSinceVersionSource == 0 }}
-      #is-release: 'true'
+      is-release: 'true'
     
     steps:
     - name: Setup .NET 9
@@ -268,13 +267,13 @@ jobs:
             }
           }
 
-    - name: Log in to the Container registry
-      uses: docker/login-action@v3
-      if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
-      with:
-        #registry: ${{ env.REGISTRY }}
-        username: ${{ github.repository_owner}}
-        password: ${{ secrets.DOCKER_HUB_TOKEN }}
+    # - name: Log in to the Container registry
+    #   uses: docker/login-action@v3
+    #   if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
+    #   with:
+    #     #registry: ${{ env.REGISTRY }}
+    #     username: ${{ github.repository_owner}}
+    #     password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
     - name: Extract metadata (tags, labels) for Docker
       id: meta
