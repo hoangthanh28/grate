@@ -254,7 +254,7 @@ jobs:
       if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
       run: |
         name=grate-msi-${{ matrix.arch }}-${{ needs.set-version-number.outputs.nuGetVersion }}.msi
-        mv ./installers/msi/tmp/*.msi $name
+        find ./installers/msi/tmp -name '*.msi' | xargs -I {} cp {} $name
         gh release upload ${{ needs.set-version-number.outputs.semVer }} $name --clobber
       env:
         GH_TOKEN: ${{ github.token }}
@@ -366,6 +366,7 @@ jobs:
       run: |
         nameOld=./installers/deb/grate_${{ needs.set-version-number.outputs.nuGetVersion }}-1_${{ steps.get-arch.outputs.arch }}.deb
         name=grate_${{ needs.set-version-number.outputs.nuGetVersion }}_${{ steps.get-arch.outputs.arch }}.deb
+        mv $nameOld $name
         gh release upload ${{ needs.set-version-number.outputs.semVer }} $name --clobber
       env:
         GH_TOKEN: ${{ github.token }}
