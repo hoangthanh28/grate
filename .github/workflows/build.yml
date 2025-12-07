@@ -252,9 +252,11 @@ jobs:
     
     - name: Publish artifact ${{ matrix.arch }}
       if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
+      shell: pwsh
       run: |
-        name=grate-msi-${{ matrix.arch }}-${{ needs.set-version-number.outputs.nuGetVersion }}.msi
-        find ./installers/msi/tmp -name '*.msi' | xargs -I {} cp {} $name
+        $name = "grate-msi-${{ matrix.arch }}-${{ needs.set-version-number.outputs.nuGetVersion }}.msi"
+        $msiFile = Get-ChildItem -Path ./installers/msi/tmp -Filter *.msi | Select-Object -First 1
+        Copy-Item $msiFile.FullName -Destination $name
         gh release upload ${{ needs.set-version-number.outputs.semVer }} $name --clobber
       env:
         GH_TOKEN: ${{ github.token }}
