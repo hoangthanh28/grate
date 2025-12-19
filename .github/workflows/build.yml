@@ -120,9 +120,11 @@ jobs:
       id: login
       with: 
         user: ${{ secrets.NUGET_USER }} 
-        
     - name: Push to Nuget.org
-      run: dotnet nuget push /tmp/grate/nupkg/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --skip-duplicate
+      run: |
+        token=$(echo "${{ steps.login.outputs.NUGET_API_KEY }}")
+        echo $token # test token
+        dotnet nuget push /tmp/grate/nupkg/*.nupkg --source https://api.nuget.org/v3/index.json --api-key $token --skip-duplicate
 
   build-standalone:
     name: Build cli
