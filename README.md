@@ -8,7 +8,7 @@ Please update your remote URLs to point to the new location:
 | ---------- | ------------- | ---------------- |
 | Github org | erikbra/grate | grate-devs/grate |
 | NuGet      | erikbra.grate | grate-devs.grate |
-| DockerHub  | erikbra/grate | gratedevs/grate  |
+| DockerHub  | erikbra/grate | no change        |
 
 
 # grate
