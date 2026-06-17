@@ -1,7 +1,4 @@
 ﻿using System.CommandLine;
-using System.CommandLine.Invocation;
-using System.CommandLine.NamingConventionBinder;
-using System.CommandLine.Parsing;
 using System.Configuration;
 using FluentAssertions;
 using grate.Commands;
@@ -23,10 +20,15 @@ public class Basic_CommandLineParsing
     [Fact]
     public void ParserIsConfiguredCorrectly()
     {
-        // Test that the parser configuration is valid, see https://github.com/dotnet/command-line-api/issues/1613
-        var command = new MigrateCommand(null!);
-        var configuration = new CommandLineConfiguration(command);
-        configuration.ThrowIfInvalid();
+        // Test that the command configuration is valid, see https://github.com/dotnet/command-line-api/issues/1613
+        // In System.CommandLine, invalid configuration (e.g. duplicate option aliases) throws while the
+        // command is being constructed and when it parses, so constructing and parsing must not throw.
+        var act = () =>
+        {
+            var command = new MigrateCommand(null!);
+            _ = command.Parse("");
+        };
+        act.Should().NotThrow();
     }
 
     [Theory]
@@ -397,7 +399,7 @@ public class Basic_CommandLineParsing
         cfg?.UpToDateCheck.Should().Be(expected);
     }
 
-    private static async Task<CommandLineGrateConfiguration?> ParseGrateConfiguration(string commandline)
+    private static Task<CommandLineGrateConfiguration?> ParseGrateConfiguration(string commandline)
     {
         // All parsing fails if the connectionstring is not supplied, so we need to add it here, if it's not in the commandline.
         if (
@@ -409,19 +411,15 @@ public class Basic_CommandLineParsing
             commandline += " -c \"Server=.;Database=master;Trusted_Connection=True;\"";
         }
 
-        CommandLineGrateConfiguration? cfg = null;
-        var cmd = CommandHandler.Create((CommandLineGrateConfiguration config) => cfg = config);
+        var command = new MigrateCommand(null!);
+        var parseResult = command.Parse(commandline);
 
-        ParseResult p =
-            new Parser(new MigrateCommand(null!)).Parse(commandline);
-
-        if (p.Errors.Any())
+        if (parseResult.Errors.Any())
         {
-            var exceptions = p.Errors.Select(error => new ConfigurationErrorsException(error.Message)).ToList();
+            var exceptions = parseResult.Errors.Select(error => new ConfigurationErrorsException(error.Message)).ToList();
             throw new MigrationFailed(exceptions);
         }
 
-        await cmd.InvokeAsync(new InvocationContext(p));
-        return cfg;
+        return Task.FromResult<CommandLineGrateConfiguration?>(command.GetConfiguration(parseResult));
     }
 }

@@ -171,7 +171,6 @@ public record DockerGrateMigrator(
         var properties = configuration.GetType().GetProperties();
 
         var cmd = new MigrateCommand(this);
-        cmd.Add(Program.Verbosity());
 
         foreach (var prop in properties)
         {
@@ -194,12 +193,14 @@ public record DockerGrateMigrator(
             }
             
             var name = prop.Name;
-            var option = cmd.Options.FirstOrDefault(o => string.Equals(o.Name, name, StringComparison.OrdinalIgnoreCase));
-            
+            // In System.CommandLine the option Name now includes the prefix (e.g. "--connectionstring")
+            // and Aliases no longer contains the name, so match on the prefix-stripped name and use
+            // the option's (always "--"-prefixed) Name as the flag to pass on the command line.
+            var option = cmd.Options.FirstOrDefault(o => string.Equals(o.Name.TrimStart('-'), name, StringComparison.OrdinalIgnoreCase));
+
             if (option is not null && value is not null)
             {
-                var optionName = option.Aliases.FirstOrDefault(alias => alias.StartsWith("--")) 
-                                 ?? option.Aliases.First();
+                var optionName = option.Name;
 
                 if (value is string[] arr)
                 {

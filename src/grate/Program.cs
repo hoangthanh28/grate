@@ -1,9 +1,4 @@
 ﻿using System.CommandLine;
-using System.CommandLine.Builder;
-using System.CommandLine.Invocation;
-using System.CommandLine.IO;
-using System.CommandLine.NamingConventionBinder;
-using System.CommandLine.Parsing;
 using System.Reflection;
 using grate.Commands;
 using grate.Configuration;
@@ -28,7 +23,7 @@ public static class Program
     {
         // Temporarily parse the configuration, to get the verbosity level, and potentially set parameters
         // to support the "IsUpToDate" check.
-        var cfg = await ParseGrateConfiguration(args);
+        var cfg = ParseGrateConfiguration(args);
         if (cfg.UpToDateCheck)
         {
             cfg = cfg with { Verbosity = LogLevel.Critical, DryRun = true };
@@ -37,64 +32,56 @@ public static class Program
         _serviceProvider = BuildServiceProvider(cfg).CreateAsyncScope().ServiceProvider;
 
         var rootCommand = Create<MigrateCommand>();
-        rootCommand.Add(Verbosity());
 
         rootCommand.Description = $"grate v{GetVersion()} - sql for the 20s";
 
-        var parser = new CommandLineBuilder(rootCommand)
-            // These are all the CommandLine features enabled by default
-            // .UseVersionOption()  //but we don't want version (as we use the --version option ourselves)
-            .UseHelp()
-            .UseEnvironmentVariableDirective()
-            .UseParseDirective()
-            .UseSuggestDirective()
-            .RegisterWithDotnetSuggest()
-            .UseTypoCorrections()
-            .UseParseErrorReporting()
-            .UseExceptionHandler(ExceptionHandler)
-            .CancelOnProcessTermination()
-            .Build();
+        // System.CommandLine enables help, suggestions, typo corrections and parse-error reporting
+        // by default. We handle exceptions ourselves (see below), so disable the built-in handler.
+        var configuration = new InvocationConfiguration
+        {
+            EnableDefaultExceptionHandler = false
+        };
 
-        var result = await parser.InvokeAsync(args);
+        var parseResult = rootCommand.Parse(args);
+
+        int result;
+        try
+        {
+            result = await parseResult.InvokeAsync(configuration);
+        }
+        catch (Exception ex)
+        {
+            result = ExceptionHandler(ex, configuration);
+        }
 
         await WaitForLoggerToFinish();
 
         return result;
     }
-    
-    private static void ExceptionHandler(Exception ex, InvocationContext context)
+
+    private static int ExceptionHandler(Exception ex, InvocationConfiguration configuration)
     {
         // Log the error message at the highest level, and the exception at debug level.
         // Avoids logging the exception stack trace to the end user, if logging level is not set to debug.
-        
+
         var logger = _serviceProvider.GetRequiredService<ILogger<GrateMigrator>>();
-        
-        context.Console.Error.CreateTextWriter().WriteColoredMessage("An error occurred: ", GrateConsoleColor.Foreground.Red);
-        
+
+        configuration.Error.WriteColoredMessage("An error occurred: ", GrateConsoleColor.Foreground.Red);
+
         logger.LogDebug(ex, "{ErrorMessage}", ex.Message);
         logger.LogError("{ErrorMessage}", ex.Message);
-        
-        context.ExitCode = 1;
+
+        return 1;
     }
-    
+
 
     private static string GetVersion() => Assembly.GetEntryAssembly()?.GetName().Version?.ToString() ?? "1.0.0.1";
 
-    private static async Task<CommandLineGrateConfiguration> ParseGrateConfiguration(IReadOnlyList<string> commandline)
+    private static CommandLineGrateConfiguration ParseGrateConfiguration(IReadOnlyList<string> commandline)
     {
-        CommandLineGrateConfiguration cfg = new CommandLineGrateConfiguration();
-        var handler = CommandHandler.Create((CommandLineGrateConfiguration config) => cfg = config);
-
-        var cmd = new MigrateCommand(null!)
-        {
-            Verbosity(),
-        };
-
-        ParseResult p =
-            new Parser(cmd).Parse(commandline);
-        await handler.InvokeAsync(new InvocationContext(p));
-
-        return cfg;
+        var cmd = new MigrateCommand(null!);
+        var parseResult = cmd.Parse(commandline);
+        return cmd.GetConfiguration(parseResult);
     }
 
 
@@ -153,10 +140,6 @@ public static class Program
 
         return services.BuildServiceProvider();
     }
-
-    internal static Option<LogLevel> Verbosity() => new(
-        ["-v", "--verbosity"],
-        "Verbosity level (as defined here: https://docs.microsoft.com/dotnet/api/Microsoft.Extensions.Logging.LogLevel)");
 
     private static T Create<T>() where T : notnull => _serviceProvider.GetRequiredService<T>();
 }
