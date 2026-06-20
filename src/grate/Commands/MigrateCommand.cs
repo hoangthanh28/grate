@@ -1,7 +1,5 @@
 ﻿using System.CommandLine;
-using System.CommandLine.Parsing;
 using grate.Configuration;
-using grate.Infrastructure;
 using grate.Migration;
 using Microsoft.Extensions.Logging;
 using static grate.Configuration.DefaultConfiguration;
@@ -10,39 +8,6 @@ namespace grate.Commands;
 
 internal sealed class MigrateCommand : RootCommand
 {
-    // The options are stored as fields so that their parsed values can be read back
-    // explicitly in GetConfiguration. This replaces the (now removed and deprecated)
-    // System.CommandLine.NamingConventionBinder, which used to bind option values to the
-    // configuration record by reflection/convention.
-    private readonly Option<string> _connectionString = ConnectionString();
-    private readonly Option<string> _adminConnectionString = AdminConnectionString();
-    private readonly Option<DirectoryInfo> _sqlFilesDirectory = SqlFilesDirectory();
-    private readonly Option<DirectoryInfo> _outputPath = OutputPath();
-    private readonly Option<IFoldersConfiguration?> _folders = Folders();
-    private readonly Option<string> _accessToken = AccessToken();
-    private readonly Option<int> _commandTimeout = CommandTimeout();
-    private readonly Option<int> _commandTimeoutAdmin = CommandTimeoutAdmin();
-    private readonly Option<DatabaseType> _databaseType = DatabaseType();
-    private readonly Option<bool> _runInTransaction = RunInTransaction();
-    private readonly Option<CommandLineGrateEnvironment?> _environment = Environments();
-    private readonly Option<string> _schemaName = SchemaName();
-    private readonly Option<bool> _silent = Silent();
-    private readonly Option<string> _repositoryPath = RepositoryPath();
-    private readonly Option<string> _version = Version();
-    private readonly Option<bool> _drop = Drop();
-    private readonly Option<bool> _createDatabase = CreateDatabase();
-    private readonly Option<bool> _disableTokenReplacement = Tokens();
-    private readonly Option<bool> _warnOnOneTimeScriptChanges = WarnAndRunOnScriptChange();
-    private readonly Option<bool> _warnAndIgnoreOnOneTimeScriptChanges = WarnAndIgnoreOnScriptChange();
-    private readonly Option<IEnumerable<string>> _userTokens = UserTokens();
-    private readonly Option<bool> _doNotStoreScriptsRunText = DoNotStoreScriptText();
-    private readonly Option<bool> _baseline = Baseline();
-    private readonly Option<bool> _runAllAnyTimeScripts = RunAllAnyTimeScripts();
-    private readonly Option<bool> _dryRun = DryRun();
-    private readonly Option<string> _restore = Restore();
-    private readonly Option<bool> _ignoreDirectoryNames = IgnoreDirectoryNames();
-    private readonly Option<bool> _upToDateCheck = UpToDateCheck();
-    private readonly Option<LogLevel> _verbosity = Verbosity();
 
     public MigrateCommand(IGrateMigrator mi) : base("Migrates the database")
     {
@@ -54,41 +19,41 @@ internal sealed class MigrateCommand : RootCommand
             Options.Remove(versionOption);
         }
 
-        Options.Add(_connectionString);
-        Options.Add(_adminConnectionString);
-        Options.Add(_sqlFilesDirectory);
-        Options.Add(_outputPath);
-        Options.Add(_folders);
-        Options.Add(_accessToken);
-        Options.Add(_commandTimeout);
-        Options.Add(_commandTimeoutAdmin);
-        Options.Add(_databaseType);
-        Options.Add(_runInTransaction);
-        Options.Add(_environment);
-        Options.Add(_schemaName);
-        Options.Add(_silent);
-        Options.Add(_repositoryPath);
-        Options.Add(_version);
-        Options.Add(_drop);
-        Options.Add(_createDatabase);
-        Options.Add(_disableTokenReplacement);
-        Options.Add(_warnOnOneTimeScriptChanges);
-        Options.Add(_warnAndIgnoreOnOneTimeScriptChanges);
-        Options.Add(_userTokens);
-        Options.Add(_doNotStoreScriptsRunText);
-        Options.Add(_baseline);
-        Options.Add(_runAllAnyTimeScripts);
-        Options.Add(_dryRun);
-        Options.Add(_restore);
-        Options.Add(_ignoreDirectoryNames);
-        Options.Add(_upToDateCheck);
-        Options.Add(_verbosity);
+        Options.Add(ConnectionString);
+        Options.Add(AdminConnectionString);
+        Options.Add(SqlFilesDirectory);
+        Options.Add(OutputPath);
+        Options.Add(Folders);
+        Options.Add(AccessToken);
+        Options.Add(CommandTimeout);
+        Options.Add(CommandTimeoutAdmin);
+        Options.Add(DatabaseType);
+        Options.Add(RunInTransaction);
+        Options.Add(Environments);
+        Options.Add(SchemaName);
+        Options.Add(Silent);
+        Options.Add(RepositoryPath);
+        Options.Add(Version);
+        Options.Add(Drop);
+        Options.Add(CreateDatabase);
+        Options.Add(Tokens); //DisableTokenReplacement
+        Options.Add(WarnAndRunOnScriptChange);
+        Options.Add(WarnAndIgnoreOnScriptChange);
+        Options.Add(UserTokens);
+        Options.Add(DoNotStoreScriptText);
+        Options.Add(Baseline);
+        Options.Add(RunAllAnyTimeScripts);
+        Options.Add(DryRun);
+        Options.Add(Restore);
+        Options.Add(IgnoreDirectoryNames);
+        Options.Add(UpToDateCheck);
+        Options.Add(Verbosity);
 
         // Obsolete options - kept so that grate keeps reporting helpful messages, but not bound.
-        Options.Add(Database());
-        Options.Add(ServerName());
+        Options.Add(Database);
+        Options.Add(ServerName);
 
-        SetAction((ParseResult _, CancellationToken _) => mi.Migrate());
+        SetAction((_, _) => mi.Migrate());
     }
 
     /// <summary>
@@ -105,37 +70,37 @@ internal sealed class MigrateCommand : RootCommand
 
         return new CommandLineGrateConfiguration
         {
-            ConnectionString = GetValueOrDefault(parseResult, _connectionString),
-            AdminConnectionString = GetValueOrDefault(parseResult, _adminConnectionString),
-            SqlFilesDirectory = GetValueOrDefault(parseResult, _sqlFilesDirectory)!,
-            OutputPath = GetValueOrDefault(parseResult, _outputPath)!,
-            Folders = GetValueOrDefault(parseResult, _folders) ?? defaults.Folders,
-            AccessToken = GetValueOrDefault(parseResult, _accessToken),
-            CommandTimeout = GetValueOrDefault(parseResult, _commandTimeout),
-            AdminCommandTimeout = GetValueOrDefault(parseResult, _commandTimeoutAdmin),
-            DatabaseType = GetValueOrDefault(parseResult, _databaseType),
-            Transaction = GetValueOrDefault(parseResult, _runInTransaction),
-            Environment = GetValueOrDefault(parseResult, _environment),
-            SchemaName = GetValueOrDefault(parseResult, _schemaName)!,
-            NonInteractive = GetValueOrDefault(parseResult, _silent),
-            RepositoryPath = GetValueOrDefault(parseResult, _repositoryPath),
-            Version = GetValueOrDefault(parseResult, _version) ?? defaults.Version,
-            Drop = GetValueOrDefault(parseResult, _drop),
-            CreateDatabase = GetValueOrDefault(parseResult, _createDatabase),
-            DisableTokenReplacement = GetValueOrDefault(parseResult, _disableTokenReplacement),
-            WarnOnOneTimeScriptChanges = GetValueOrDefault(parseResult, _warnOnOneTimeScriptChanges),
-            WarnAndIgnoreOnOneTimeScriptChanges = GetValueOrDefault(parseResult, _warnAndIgnoreOnOneTimeScriptChanges),
-            UserTokens = GetValueOrDefault(parseResult, _userTokens),
-            DoNotStoreScriptsRunText = GetValueOrDefault(parseResult, _doNotStoreScriptsRunText),
-            Baseline = GetValueOrDefault(parseResult, _baseline),
-            RunAllAnyTimeScripts = GetValueOrDefault(parseResult, _runAllAnyTimeScripts),
-            DryRun = GetValueOrDefault(parseResult, _dryRun),
-            Restore = GetValueOrDefault(parseResult, _restore),
-            IgnoreDirectoryNames = GetValueOrDefault(parseResult, _ignoreDirectoryNames),
-            UpToDateCheck = GetValueOrDefault(parseResult, _upToDateCheck),
+            ConnectionString = GetValueOrDefault(parseResult, ConnectionString),
+            AdminConnectionString = GetValueOrDefault(parseResult, AdminConnectionString),
+            SqlFilesDirectory = GetValueOrDefault(parseResult, SqlFilesDirectory)!,
+            OutputPath = GetValueOrDefault(parseResult, OutputPath)!,
+            Folders = GetValueOrDefault(parseResult, Folders) ?? defaults.Folders,
+            AccessToken = GetValueOrDefault(parseResult, AccessToken),
+            CommandTimeout = GetValueOrDefault(parseResult, CommandTimeout),
+            AdminCommandTimeout = GetValueOrDefault(parseResult, CommandTimeoutAdmin),
+            DatabaseType = GetValueOrDefault(parseResult, DatabaseType),
+            Transaction = GetValueOrDefault(parseResult, RunInTransaction),
+            Environment = GetValueOrDefault(parseResult, Environments),
+            SchemaName = GetValueOrDefault(parseResult, SchemaName)!,
+            NonInteractive = GetValueOrDefault(parseResult, Silent),
+            RepositoryPath = GetValueOrDefault(parseResult, RepositoryPath),
+            Version = GetValueOrDefault(parseResult, Version) ?? defaults.Version,
+            Drop = GetValueOrDefault(parseResult, Drop),
+            CreateDatabase = GetValueOrDefault(parseResult, CreateDatabase),
+            DisableTokenReplacement = GetValueOrDefault(parseResult, Tokens),
+            WarnOnOneTimeScriptChanges = GetValueOrDefault(parseResult, WarnAndRunOnScriptChange),
+            WarnAndIgnoreOnOneTimeScriptChanges = GetValueOrDefault(parseResult, WarnAndIgnoreOnScriptChange),
+            UserTokens = GetValueOrDefault(parseResult, UserTokens),
+            DoNotStoreScriptsRunText = GetValueOrDefault(parseResult, DoNotStoreScriptText),
+            Baseline = GetValueOrDefault(parseResult, Baseline),
+            RunAllAnyTimeScripts = GetValueOrDefault(parseResult, RunAllAnyTimeScripts),
+            DryRun = GetValueOrDefault(parseResult, DryRun),
+            Restore = GetValueOrDefault(parseResult, Restore),
+            IgnoreDirectoryNames = GetValueOrDefault(parseResult, IgnoreDirectoryNames),
+            UpToDateCheck = GetValueOrDefault(parseResult, UpToDateCheck),
             // Verbosity has no default value factory; when it isn't supplied keep the record default.
-            Verbosity = parseResult.GetResult(_verbosity) is { Implicit: false }
-                ? GetValueOrDefault(parseResult, _verbosity)
+            Verbosity = parseResult.GetResult(Verbosity) is { Implicit: false }
+                ? GetValueOrDefault(parseResult, Verbosity)
                 : defaults.Verbosity,
         };
     }
@@ -157,7 +122,7 @@ internal sealed class MigrateCommand : RootCommand
     }
 
     //REQUIRED OPTIONS
-    private static Option<string> ConnectionString() =>
+    private static readonly Option<string> ConnectionString =
         new("--connectionstring", "-c", "-cs", "--connstring")
         {
             Description = "You now provide an entire connection string. ServerName and Database are obsolete.",
@@ -166,7 +131,7 @@ internal sealed class MigrateCommand : RootCommand
 
 
     //CONNECTIONSTRING OPTIONS
-    private static Option<string> AdminConnectionString() =>
+    private static readonly Option<string> AdminConnectionString =
         new("--adminconnectionstring", "-csa", "-a", "-acs", "--adminconnstring")
         {
             Description = "The connection string for connecting to master, if you want to create the database.  Defaults to the same as --connstring.",
@@ -175,21 +140,21 @@ internal sealed class MigrateCommand : RootCommand
 
 
     //DIRECTORY OPTIONS
-    private static Option<DirectoryInfo> SqlFilesDirectory() =>
+    private static readonly Option<DirectoryInfo> SqlFilesDirectory =
         new Option<DirectoryInfo>("--sqlfilesdirectory", "-f", "--files")
         {
             Description = "The directory where your SQL scripts are",
             DefaultValueFactory = _ => new DirectoryInfo(DefaultFilesDirectory)
         }.AcceptExistingOnly();
 
-    private static Option<DirectoryInfo> OutputPath() =>
+    private static readonly Option<DirectoryInfo> OutputPath =
         new("--outputPath", "-o", "--output")
         {
             Description = "This is where everything related to the migration is stored. This includes any backups, all items that ran, permission dumps, logs, etc.",
             DefaultValueFactory = _ => new DirectoryInfo(DefaultOutputPath)
         };
 
-    private static Option<IFoldersConfiguration?> Folders() =>
+    private static readonly Option<IFoldersConfiguration?> Folders =
         new("--folders")
         {
             CustomParser = result =>
@@ -255,7 +220,7 @@ the last one will expect the folders to be named 'folder1', 'folder2', and 'fold
 
 
     //SECURITY OPTIONS
-    private static Option<string> AccessToken() =>
+    private static readonly Option<string> AccessToken =
         new("--accesstoken")
         {
             Description = "Access token to be used for logging in to SQL Server / Azure SQL Database."
@@ -263,14 +228,14 @@ the last one will expect the folders to be named 'folder1', 'folder2', and 'fold
 
 
     //TIMEOUT OPTIONS
-    private static Option<int> CommandTimeout() =>
+    private static readonly Option<int> CommandTimeout =
         new("--commandtimeout", "-ct")
         {
             Description = "This is the timeout when commands are run. This is not for admin commands or restore.",
             DefaultValueFactory = _ => DefaultCommandTimeout
         };
 
-    private static Option<int> CommandTimeoutAdmin() =>
+    private static readonly Option<int> CommandTimeoutAdmin =
         new("--admincommandtimeout", "-cta")
         {
             Description = "This is the timeout when administration commands are run (except for restore, which has its own).",
@@ -278,33 +243,33 @@ the last one will expect the folders to be named 'folder1', 'folder2', and 'fold
         };
 
     //DATABASE OPTIONS
-    private static Option<DatabaseType> DatabaseType() =>
+    private static readonly Option<DatabaseType> DatabaseType =
         new("--databasetype", "--dt", "--dbt")
         {
             Description = "TELLS GRATE WHAT TYPE OF DATABASE IT IS RUNNING ON.",
             DefaultValueFactory = _ => Configuration.DatabaseType.SQLServer
         };
 
-    private static Option<bool> RunInTransaction() =>
+    private static readonly Option<bool> RunInTransaction =
         new("--transaction", "--trx", "-t")
         {
             Description = "Run the migration in a transaction"
         };
 
-    private static Option<string> SchemaName() =>
+    private static readonly Option<string> SchemaName =
         new("--schemaname", "--sc", "--schema")
         {
             Description = "The schema to use for the migration tables",
             DefaultValueFactory = _ => "grate"
         };
 
-    private static Option<bool> Drop() =>
+    private static readonly Option<bool> Drop =
         new("--drop")
         {
             Description = "Drop - This instructs grate to remove the target database.  Unlike RoundhousE grate will continue to run the migration scripts after the drop."
         };
 
-    private static Option<bool> CreateDatabase() =>
+    private static readonly Option<bool> CreateDatabase =
         new("--createdatabase", "--create")
         {
             Description = "Create - This instructs grate to create the target database if it does not exist.  Defaults to true.  Set to false to emulate the --donotcreatedatabase flag in roundhouse.",
@@ -313,7 +278,7 @@ the last one will expect the folders to be named 'folder1', 'folder2', and 'fold
 
 
     //ENVIRONMENT OPTIONS
-    private static Option<CommandLineGrateEnvironment?> Environments() =>
+    private static readonly Option<CommandLineGrateEnvironment?> Environments =
         new("--environment", "--env")
         {
             // A custom parser is needed to support combining environments separated by space, ',' or ';'.
@@ -326,13 +291,13 @@ the last one will expect the folders to be named 'folder1', 'folder2', and 'fold
 
 
     //WARNING OPTIONS
-    private static Option<bool> WarnAndRunOnScriptChange() =>
+    private static readonly Option<bool> WarnAndRunOnScriptChange =
         new("--warnononetimescriptchanges", "-w")
         {
             Description = "WarnOnOneTimeScriptChanges - Instructs grate to execute changed one time scripts(DDL / DML in Up folder) that have previously been run against the database instead of failing.  A warning is logged for each one time script that is rerun. Defaults to false."
         };
 
-    private static Option<bool> WarnAndIgnoreOnScriptChange() =>
+    private static readonly Option<bool> WarnAndIgnoreOnScriptChange =
         new("--warnandignoreononetimescriptchanges")
         {
             Description = "WarnAndIgnoreOnOneTimeScriptChanges - Instructs grate to ignore and update the hash of changed one time scripts (DDL/DML in Up folder) that have previously been run against the database instead of failing. A warning is logged for each one time scripts that is rerun. Defaults to false."
@@ -340,13 +305,13 @@ the last one will expect the folders to be named 'folder1', 'folder2', and 'fold
 
 
     //TOKEN OPTIONS
-    private static Option<bool> Tokens() =>
+    private static readonly Option<bool> Tokens =
         new("--disabletokenreplacement", "--disabletokens")
         {
             Description = "Tokens - This instructs grate to not perform token replacement ({{somename}}). Defaults to false."
         };
 
-    private static Option<IEnumerable<string>> UserTokens() =>
+    private static Option<IEnumerable<string>> UserTokens =
         new("--usertokens", "--ut")
         {
             Description = "User Tokens - Allows grate to perform token replacement on custom tokens ({{my_token}}). Set as a key=value pair, eg '--ut=my_token=myvalue'. Can be specified multiple times."
@@ -354,13 +319,13 @@ the last one will expect the folders to be named 'folder1', 'folder2', and 'fold
 
 
     //SCRIPT OPTIONS
-    private static Option<bool> DoNotStoreScriptText() =>
+    private static readonly Option<bool> DoNotStoreScriptText =
         new("--donotstorescriptsruntext")
         {
             Description = "DoNotStoreScriptsRunText - This instructs grate to not store the full script text in the database. Defaults to false."
         };
 
-    private static Option<bool> RunAllAnyTimeScripts() =>
+    private static readonly Option<bool> RunAllAnyTimeScripts =
         new("--runallanytimescripts", "--forceanytimescripts")
         {
             Description = "RunAllAnyTimeScripts - This instructs grate to run any time scripts every time it is run even if they haven't changed. Defaults to false."
@@ -368,37 +333,37 @@ the last one will expect the folders to be named 'folder1', 'folder2', and 'fold
 
 
     //MISC OPTIONS
-    private static Option<bool> Baseline() =>
+    private static readonly Option<bool> Baseline =
         new("--baseline")
         {
             Description = "Baseline - This instructs grate to mark the scripts as run, but not to actually run anything against the database. Use this option if you already have scripts that have been run through other means (and BEFORE you start the new ones)."
         };
 
-    private static Option<bool> DryRun() =>
+    private static readonly Option<bool> DryRun =
         new("--dryrun")
         {
             Description = " DryRun - This instructs grate to log what would have run, but not to actually run anything against the database.  Use this option if you are trying to figure out what grate is going to do."
         };
 
-    private static Option<string> Restore() =>
+    private static readonly Option<string> Restore =
         new("--restore")
         {
             Description = " Restore - This instructs grate where to get the backed up database file. Defaults to NULL."
         };
 
-    private static Option<bool> Silent() =>
+    private static readonly Option<bool> Silent =
         new("--noninteractive", "-ni", "--ni", "--silent")
         {
             Description = "Silent - tells grate not to ask for any input when it runs."
         };
 
-    private static Option<string> RepositoryPath() =>
+    private static readonly Option<string> RepositoryPath =
         new("--repositorypath", "-r", "--repo")
         {
             Description = "Repository Path - The repository. A string that can be anything. Used to track versioning along with the version. Defaults to NULL."
         };
 
-    private static Option<string> Version() =>
+    private static readonly Option<string> Version =
         new("--version")
         {
             Description = "Database Version - specify the version of the current migration directly on the command line."
@@ -406,32 +371,32 @@ the last one will expect the folders to be named 'folder1', 'folder2', and 'fold
 
 
     //OBSOLETE OPTIONS
-    private static Option<string> Database() =>
+    private static readonly Option<string> Database =
         new("--database")
         {
             Description = "OBSOLETE: Please specify the connection string instead",
             Required = false
         };
 
-    private static Option<string> ServerName() =>
+    private static readonly Option<string> ServerName =
         new("--servername", "--instance", "--server", "-s")
         {
             Description = "OBSOLETE: Please specify the connection string instead."
         };
 
-    private static Option<bool> IgnoreDirectoryNames() =>
+    private static readonly Option<bool> IgnoreDirectoryNames =
         new("--ignoredirectorynames", "--searchallinsteadoftraverse", "--searchallsubdirectoriesinsteadoftraverse")
         {
             Description = "IgnoreDirectoryNames - By default, scripts are ordered by relative path including subdirectories. This option searches subdirectories, but order is based on filename alone."
         };
 
-    private static Option<bool> UpToDateCheck() =>
+    private static readonly Option<bool> UpToDateCheck =
         new("--uptodatecheck", "--isuptodate")
         {
             Description = "Outputs whether the database is up to date or not (whether any non-everytime scripts would be run)"
         };
 
-    private static Option<LogLevel> Verbosity() =>
+    private static readonly Option<LogLevel> Verbosity =
         new("--verbosity", "-v")
         {
             Description = "Verbosity level (as defined here: https://docs.microsoft.com/dotnet/api/Microsoft.Extensions.Logging.LogLevel)"

@@ -1,34 +1,27 @@
-﻿using System.CommandLine;
-using System.Configuration;
+﻿using System.Configuration;
 using FluentAssertions;
 using grate.Commands;
 using grate.Configuration;
 using grate.Exceptions;
 using grate.Infrastructure;
-
-#if NET6_0
-using Dir = TestCommon.TestInfrastructure.Net6PolyFills.Directory;
-#else
 using Dir = System.IO.Directory;
-#endif
 
 namespace Basic_tests.CommandLineParsing;
 
 // ReSharper disable once InconsistentNaming
 public class Basic_CommandLineParsing
 {
-    [Fact]
-    public void ParserIsConfiguredCorrectly()
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("-ct=100")]
+    public void ParserIsConfiguredCorrectly(string commandline)
     {
-        // Test that the command configuration is valid, see https://github.com/dotnet/command-line-api/issues/1613
-        // In System.CommandLine, invalid configuration (e.g. duplicate option aliases) throws while the
-        // command is being constructed and when it parses, so constructing and parsing must not throw.
-        var act = () =>
-        {
-            var command = new MigrateCommand(null!);
-            _ = command.Parse("");
-        };
-        act.Should().NotThrow();
+        var command = new MigrateCommand(null!);
+        var parseResult = command.Parse(commandline);
+        Assert.NotNull(parseResult.Errors);
+        Assert.Single(parseResult.Errors);
+        Assert.Equal("Option '--connectionstring' is required.", parseResult.Errors[0].Message);
     }
 
     [Theory]
@@ -190,8 +183,8 @@ public class Basic_CommandLineParsing
 
         cfg?.Transaction.Should().Be(false);
     }
-    
-    
+
+
     /// <summary>
     /// We can use multiple environments, separated by space, ; or ,
     /// This makes it possible to create orhotogonal environments, and run scripts
@@ -223,16 +216,16 @@ public class Basic_CommandLineParsing
     /// <param name="expected"></param>
 
     [Theory]
-    [InlineData("--env KASHMIR", new[] {"KASHMIR"})]
-    [InlineData("--env JALLA", new[] {"JALLA"})]
-    [InlineData("--env JALLA KASHMIR", new[] {"JALLA", "KASHMIR"})]
-    [InlineData("--env JALLA,BERGEN", new[] {"JALLA", "BERGEN"})]
-    [InlineData("--env Dev;Azure;OnlyOnMondays", new[] {"Dev", "Azure", "OnlyOnMondays"})]
-    [InlineData("--env Customer1;Azure;Dev", new[] {"Customer1", "Azure", "Dev"})]
-    [InlineData("--env Customer1;Azure;Test", new[] {"Customer1", "Azure", "Test"})]
-    [InlineData("--env Customer2;Azure;Dev", new[] {"Customer2", "Azure", "Dev"})]
-    [InlineData("--env Customer2;Aws;QA", new[] {"Customer2", "Aws", "QA"})]
-    [InlineData("--env Customer2;Azure;Prod", new[] {"Customer2", "Azure", "Prod"})]
+    [InlineData("--env KASHMIR", new[] { "KASHMIR" })]
+    [InlineData("--env JALLA", new[] { "JALLA" })]
+    [InlineData("--env JALLA KASHMIR", new[] { "JALLA", "KASHMIR" })]
+    [InlineData("--env JALLA,BERGEN", new[] { "JALLA", "BERGEN" })]
+    [InlineData("--env Dev;Azure;OnlyOnMondays", new[] { "Dev", "Azure", "OnlyOnMondays" })]
+    [InlineData("--env Customer1;Azure;Dev", new[] { "Customer1", "Azure", "Dev" })]
+    [InlineData("--env Customer1;Azure;Test", new[] { "Customer1", "Azure", "Test" })]
+    [InlineData("--env Customer2;Azure;Dev", new[] { "Customer2", "Azure", "Dev" })]
+    [InlineData("--env Customer2;Aws;QA", new[] { "Customer2", "Aws", "QA" })]
+    [InlineData("--env Customer2;Azure;Prod", new[] { "Customer2", "Azure", "Prod" })]
     public async Task Environments(string argName, IEnumerable<string> expected)
     {
         var commandline = argName;
@@ -386,7 +379,7 @@ public class Basic_CommandLineParsing
         var cfg = await ParseGrateConfiguration(args);
         cfg?.IgnoreDirectoryNames.Should().Be(expected);
     }
-    
+
     [Theory]
     [InlineData("", false)]
     [InlineData("--isuptodate", true)]

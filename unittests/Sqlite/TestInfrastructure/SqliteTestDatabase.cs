@@ -1,10 +1,4 @@
-﻿using Xunit.Sdk;
-
-#if NET6_0
-using Dir = TestCommon.TestInfrastructure.Net6PolyFills.Directory;
-#else
-using Dir = System.IO.Directory;
-#endif
+﻿using Dir = System.IO.Directory;
 
 namespace TestCommon.TestInfrastructure;
 
@@ -27,7 +21,7 @@ public class SqliteTestDatabase : ITestDatabase, IAsyncLifetime
     {
         return ValueTask.CompletedTask;
     }
-    
+
     public string AdminConnectionString => $"Data Source={Wrap("grate-sqlite.db")}";
     public string ConnectionString(string database) => $"Data Source={Wrap(database + ".db")}";
     public string UserConnectionString(string database) => $"Data Source={Wrap(database + ".db")}";

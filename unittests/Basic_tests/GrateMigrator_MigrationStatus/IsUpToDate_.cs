@@ -4,17 +4,11 @@ using grate.Configuration;
 using grate.Infrastructure;
 using grate.Migration;
 using NSubstitute;
-
-#if NET6_0
-using Dir = TestCommon.TestInfrastructure.Net6PolyFills.Directory;
-#else
 using Dir = System.IO.Directory;
-#endif
-
 namespace Basic_tests.GrateMigrator_MigrationStatus;
 
 // ReSharper disable once InconsistentNaming
-public class IsUpToDate_: IDisposable
+public class IsUpToDate_ : IDisposable
 {
     private static readonly DirectoryInfo SqlFilesDirectory = Dir.CreateTempSubdirectory();
 
@@ -25,24 +19,24 @@ public class IsUpToDate_: IDisposable
     {
         var folders = new Dictionary<string, List<(string, string)>>
         {
-            { "up", 
+            { "up",
                 [
                     ("script_that_is_run.sql", "-- ThisIsRun"),
                     ("script_that_is_not_run.sql", "-- ThisIsNotRun")
                 ]
             }
         };
-        
+
         var grateMigrator = CreateMigrator(folders, dryRun);
         await grateMigrator.Migrate();
 
         grateMigrator.MigrationResult.Should().NotBeNull();
         grateMigrator.MigrationResult.IsUpToDate.Should().BeFalse();
-      
+
         _logger.LoggedMessages.Should().Contain("Up to date: False");
         _logger.LoggedMessages.Should().Contain("Changed script: script_that_is_run.sql");
     }
-    
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -50,21 +44,21 @@ public class IsUpToDate_: IDisposable
     {
         var folders = new Dictionary<string, List<(string, string)>>
         {
-            { "up", 
+            { "up",
                 [
                     ("script_that_is_not_run_either.sql", "-- ThisIsDefinitelyNotRun"),
                     ("script_that_is_not_run.sql", "-- ThisIsNotRun")
                 ]
             }
         };
-        
+
         var grateMigrator = CreateMigrator(folders, dryRun);
         await grateMigrator.Migrate();
 
         grateMigrator.MigrationResult.Should().NotBeNull();
         grateMigrator.MigrationResult.IsUpToDate.Should().BeTrue();
     }
-    
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -72,27 +66,27 @@ public class IsUpToDate_: IDisposable
     {
         var folders = new Dictionary<string, List<(string, string)>>
         {
-            { "up", 
+            { "up",
                 [
                     ("script_that_is_not_run_either.sql", "-- ThisIsDefinitelyNotRun"),
                     ("script_that_is_not_run.sql", "-- ThisIsNotRun")
                 ]
             },
-            { "permissions", 
+            { "permissions",
                 [
                     ("script_that_is_run.sql", "-- ThisIsRun"),
                     ("script_that_is_not_run.sql", "-- ThisIsNotRun")
                 ]
             }
         };
-        
+
         var grateMigrator = CreateMigrator(folders, dryRun);
         await grateMigrator.Migrate();
 
         grateMigrator.MigrationResult.Should().NotBeNull();
         grateMigrator.MigrationResult.IsUpToDate.Should().BeTrue();
     }
-    
+
     private GrateMigrator CreateMigrator(Dictionary<string, List<(string, string)>> scripts, bool dryRun)
     {
         foreach (var folder in scripts.Keys)
@@ -101,7 +95,7 @@ public class IsUpToDate_: IDisposable
             {
                 var parent = Path.Combine(SqlFilesDirectory.ToString(), folder);
                 Directory.CreateDirectory(parent);
-            
+
                 var fullPath = Path.Combine(parent, filename);
                 File.WriteAllText(fullPath, content);
             }

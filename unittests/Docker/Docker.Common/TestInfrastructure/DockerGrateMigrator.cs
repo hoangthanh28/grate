@@ -2,23 +2,17 @@
 using System.Text.Json.Serialization;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Networks;
-using grate;
 using grate.Commands;
 using grate.Configuration;
 using grate.Exceptions;
 using grate.Migration;
 using Microsoft.Extensions.Logging;
-
-#if NET6_0
-using Dir = TestCommon.TestInfrastructure.Net6PolyFills.Directory;
-#else
 using Dir = System.IO.Directory;
-#endif
 
 namespace Docker.Common.TestInfrastructure;
 
 public record DockerGrateMigrator(
-    DatabaseType DatabaseType, 
+    DatabaseType DatabaseType,
     ILogger<DockerGrateMigrator> Logger,
     INetwork Network
     )
@@ -36,10 +30,10 @@ public record DockerGrateMigrator(
         //  /home/app/.net/grate/fdcA3gxdjBiIcVt0mGoBJ5IgxSbD0kE=/libe_sqlite3.so: failed to map segment from shared object
         // (similarly) /tmp/dotnet-bundle-extract/grate/fdcA3gxdjBiIcVt0mGoBJ5IgxSbD0kE=/libe_sqlite3.so: failed to map segment from shared object
         var tmpFolder = Dir.CreateTempSubdirectory().ToString();
-        
+
         // Need to map the SQL files directory to the container
         var sqlFilesDirectory = Configuration.SqlFilesDirectory.ToString();
-        
+
         Dictionary<string, string> bindMounts = new Dictionary<string, string>
         {
             { tmpFolder, "/home/app" },
@@ -50,29 +44,29 @@ public record DockerGrateMigrator(
         // both from the host and the container.
         if (DatabaseType == DatabaseType.SQLite)
         {
-            foreach (var connectionString in  new [] {Configuration.ConnectionString, Configuration.AdminConnectionString})
+            foreach (var connectionString in new[] { Configuration.ConnectionString, Configuration.AdminConnectionString })
             {
                 var dbFile = connectionString?.Split("=", 2)[1];
                 var folder = Path.GetDirectoryName(dbFile)!;
                 bindMounts[folder] = folder;
             }
         }
-        
+
         // Convert configuration to command-line arguments
         var convertToDockerArguments = ConvertToDockerArguments(Configuration);
         var dockerArguments = convertToDockerArguments.ToList();
-        
+
         // Add the database type
         dockerArguments.Add("--databasetype=" + DatabaseType.ToString().ToLowerInvariant());
-        
+
         //dockerArguments.Add("--verbosity=debug");
-        
+
         // Needed when overriding the entrypoint, not the command
         dockerArguments.Insert(0, "./grate");
 
         var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(20));
         var token = cancellationTokenSource.Token;
-        
+
         var containerBuilder = new ContainerBuilder(DockerImage)
             .WithEntrypoint(dockerArguments.ToArray())
             .WithEnvironment("DOTNET_BUNDLE_EXTRACT_BASE_DIR", "/home/app")
@@ -87,7 +81,7 @@ public record DockerGrateMigrator(
         {
             containerBuilder = containerBuilder.WithBindMount(bindMount.Key, bindMount.Value);
         }
-        
+
         await using var container = containerBuilder.Build();
 
         try
@@ -134,7 +128,7 @@ public record DockerGrateMigrator(
     }
 
     public GrateConfiguration Configuration { get; private init; } = null!;
-    
+
     public IGrateMigrator WithConfiguration(GrateConfiguration configuration)
     {
         return this with
@@ -152,18 +146,21 @@ public record DockerGrateMigrator(
     {
         var b = GrateConfigurationBuilder.Create(Configuration);
         builder.Invoke(b);
-        return this with { Configuration = b.Build() with
+        return this with
         {
+            Configuration = b.Build() with
+            {
                 // Need to overwrite the output path, as we don't have the same tmp folders on the host as in the container,
                 // and the root file system is read-only in the test container
                 OutputPath = new DirectoryInfo(Path.Combine("/tmp", "grate-tests-output", Dir.CreateTempSubdirectory().Name))
-        }};
+            }
+        };
     }
-    
+
     public IGrateMigrator WithDatabase(IDatabase database) => this with { Database = database };
     public IDatabase? Database { get; set; }
-    
-    
+
+
     private List<string> ConvertToDockerArguments(GrateConfiguration configuration)
     {
         List<string> result = new();
@@ -177,7 +174,7 @@ public record DockerGrateMigrator(
             // Skip properties with default values
             var value = prop.GetValue(configuration);
             var defaultValue = prop.GetValue(GrateConfiguration.Default);
-            
+
             var serializedValue = JsonSerializer.Serialize(value?.ToString(), SerializerOptions);
             var serializedDefault = JsonSerializer.Serialize(defaultValue?.ToString(), SerializerOptions);
 
@@ -191,7 +188,7 @@ public record DockerGrateMigrator(
             {
                 value = string.Join(';', foldersConfiguration.Values);
             }
-            
+
             var name = prop.Name;
             // In System.CommandLine the option Name now includes the prefix (e.g. "--connectionstring")
             // and Aliases no longer contains the name, so match on the prefix-stripped name and use
@@ -216,7 +213,7 @@ public record DockerGrateMigrator(
         return result;
 #pragma warning restore CS0162 // Unreachable code detected
     }
-    
+
     private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerOptions.Default)
     {
         ReferenceHandler = ReferenceHandler.IgnoreCycles
