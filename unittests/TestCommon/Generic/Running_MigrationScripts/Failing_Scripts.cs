@@ -7,7 +7,6 @@ using grate.Configuration;
 using grate.Exceptions;
 using grate.Migration;
 using TestCommon.TestInfrastructure;
-using Xunit.Abstractions;
 using Xunit.Sdk;
 using static grate.Configuration.KnownFolderKeys;
 using static TestCommon.TestInfrastructure.DescriptiveTestObjects;
@@ -16,13 +15,13 @@ namespace TestCommon.Generic.Running_MigrationScripts;
 
 
 // ReSharper disable once InconsistentNaming
-public abstract class Failing_Scripts(IGrateTestContext context, ITestOutputHelper testOutput) 
+public abstract class Failing_Scripts(IGrateTestContext context, ITestOutputHelper testOutput)
     : MigrationsScriptsBase(context, testOutput)
 {
-    protected Failing_Scripts(): this(null!, null!)
+    protected Failing_Scripts() : this(null!, null!)
     {
     }
-    
+
     // These vary a bit between the different database versions, so it's a bit too specific to check on 
     // the exact contents of the string.
     protected abstract string ExpectedStartOfErrorMessageForInvalidSql { get; }
@@ -48,16 +47,16 @@ public abstract class Failing_Scripts(IGrateTestContext context, ITestOutputHelp
             Should().StartWith(
             $"Migration failed due to the following errors:\n\n{NormalizeLineEndings(ExpectedStartOfErrorMessageForInvalidSql)}".TrimEnd()
             );
-        
+
         //await Context.DropDatabase(db);
     }
-    
+
     private static string NormalizeLineEndings(string input)
     {
         return input.Replace("\r\n", "\n").Replace("\r", "\n");
     }
-    
-        
+
+
     [Fact]
     public virtual async Task Exception_includes_details_on_the_failed_script()
     {
@@ -84,7 +83,8 @@ public abstract class Failing_Scripts(IGrateTestContext context, ITestOutputHelp
                 // - they vary between versions of the same database. But we can check that the keys are there.
                 ex.MigrationErrors.Keys.Should().Contain(ExpectedErrorDetails.Keys);
             }
-        } catch (XunitException)
+        }
+        catch (XunitException)
         {
             // Write the expected and actual error details to output, to be able to compare them in the test output
             TestOutput.WriteLine("Expected error details: " + JsonSerializer.Serialize(ExpectedErrorDetails));
@@ -93,11 +93,11 @@ public abstract class Failing_Scripts(IGrateTestContext context, ITestOutputHelp
                                  JsonSerializer.Serialize(ex.InnerException!.GetType().GetProperties().Select(prop => prop.Name)));
             throw;
         }
-        
+
         //await Context.DropDatabase(db);
-        
+
     }
-    
+
     // TODO: Improve this test to throw both transient and non-transient exceptions, and check the result
     [Fact]
     public virtual async Task Exception_is_set_to_transient_based_on_inner_exceptions()
@@ -117,7 +117,7 @@ public abstract class Failing_Scripts(IGrateTestContext context, ITestOutputHelp
         await using var migrator = Context.Migrator.WithConfiguration(config);
         var ex = await Assert.ThrowsAnyAsync<MigrationFailed>(migrator.Migrate);
         ex.IsTransient.Should().BeFalse();
-        
+
         //await Context.DropDatabase(db);
     }
 
@@ -155,10 +155,10 @@ public abstract class Failing_Scripts(IGrateTestContext context, ITestOutputHelp
         }
 
         scripts.Should().HaveCount(1);
-        
+
         //await Context.DropDatabase(db);
     }
-    
+
     [Fact]
     public async Task Inserts_RepositoryPath_Into_ScriptRunErrors_Table()
     {
@@ -167,7 +167,7 @@ public abstract class Failing_Scripts(IGrateTestContext context, ITestOutputHelp
         var parent = CreateRandomTempDirectory();
         var knownFolders = global::grate.Configuration.Folders.Default;
         CreateInvalidSql(parent, knownFolders[Up]);
-        
+
         var repositoryPath = "https://github.com/blah/blah.git";
 
         var config = GrateConfigurationBuilder.Create(Context.DefaultConfiguration)
@@ -192,10 +192,10 @@ public abstract class Failing_Scripts(IGrateTestContext context, ITestOutputHelp
         }
 
         loggedRepositoryPath.Should().Be(repositoryPath);
-        
+
         //await Context.DropDatabase(db);
     }
-    
+
 
     [Fact]
     public async Task Inserts_Large_Failed_Scripts_Into_ScriptRunErrors_Table()
@@ -204,10 +204,10 @@ public abstract class Failing_Scripts(IGrateTestContext context, ITestOutputHelp
 
         var parent = TestConfig.CreateRandomTempDirectory();
         var knownFolders = global::grate.Configuration.Folders.Default;
-        
+
         CreateLongInvalidSql(parent, knownFolders[Up]);
-        
-        string fileContent = await File.ReadAllTextAsync(Path.Combine(parent.ToString(), knownFolders[Up]!.Path, "2_failing.sql"));
+
+        string fileContent = await File.ReadAllTextAsync(Path.Combine(parent.ToString(), knownFolders[Up]!.Path, "2_failing.sql"), TestContext.Current.CancellationToken);
 
         var config = GrateConfigurationBuilder.Create(Context.DefaultConfiguration)
             .WithConnectionString(Context.ConnectionString(db))
@@ -221,7 +221,7 @@ public abstract class Failing_Scripts(IGrateTestContext context, ITestOutputHelp
         }
 
         string[] scripts;
-        string sql = $"SELECT text_of_script FROM {Context.Syntax.TableWithSchema(config.SchemaName, config.ScriptsRunErrorsTableName )}";
+        string sql = $"SELECT text_of_script FROM {Context.Syntax.TableWithSchema(config.SchemaName, config.ScriptsRunErrorsTableName)}";
 
         using (new TransactionScope(TransactionScopeOption.Suppress, TransactionScopeAsyncFlowOption.Enabled))
         {
@@ -231,7 +231,7 @@ public abstract class Failing_Scripts(IGrateTestContext context, ITestOutputHelp
 
         scripts.Should().HaveCount(1);
         scripts.First().Should().Be(fileContent);
-        
+
         //await Context.DropDatabase(db);
     }
 
@@ -251,7 +251,7 @@ public abstract class Failing_Scripts(IGrateTestContext context, ITestOutputHelp
         var knownFolders = global::grate.Configuration.Folders.Default;
         var path = MakeSurePathExists(parent, knownFolders[Up]);
         WriteSql(path, "goodnight.sql", sql);
-        
+
         // run it with a timeout shorter than the 1 second sleep, should timeout
         var config = GrateConfigurationBuilder.Create(Context.DefaultConfiguration)
             .WithConnectionString(Context.ConnectionString(db))
@@ -268,7 +268,7 @@ public abstract class Failing_Scripts(IGrateTestContext context, ITestOutputHelp
         //var ex = await Assert.ThrowsAnyAsync<MigrationFailed>(migrator.Migrate);
         var ex = await Assert.ThrowsAnyAsync<Exception>(migrator.Migrate);
         ex.Should().BeOfType<MigrationFailed>();
-        
+
         //await Context.DropDatabase(db);
     }
 
@@ -288,7 +288,7 @@ public abstract class Failing_Scripts(IGrateTestContext context, ITestOutputHelp
         var knownFolders = global::grate.Configuration.Folders.Default;
         var path = MakeSurePathExists(parent, knownFolders[AlterDatabase]); //so it's run on the admin connection
         WriteSql(path, "goodnight.sql", sql);
-        
+
         // run it with a timeout shorter than the 1 second sleep, should timeout
         var config = GrateConfigurationBuilder.Create(Context.DefaultConfiguration)
             .WithConnectionString(Context.ConnectionString(db))
@@ -305,7 +305,7 @@ public abstract class Failing_Scripts(IGrateTestContext context, ITestOutputHelp
         //var ex = await Assert.ThrowsAnyAsync<MigrationFailed>(migrator.Migrate);
         var ex = await Assert.ThrowsAnyAsync<Exception>(migrator.Migrate);
         ex.Should().BeOfType<MigrationFailed>();
-        
+
         //await Context.DropDatabase(db);
     }
 
@@ -343,7 +343,7 @@ public abstract class Failing_Scripts(IGrateTestContext context, ITestOutputHelp
         var parent = CreateRandomTempDirectory();
         var knownFolders = global::grate.Configuration.Folders.Default;
         CreateInvalidSql(parent, knownFolders[Up]);
-        
+
         var config = GrateConfigurationBuilder.Create(Context.DefaultConfiguration)
             .WithConnectionString(Context.ConnectionString(db))
             .WithSqlFilesDirectory(parent)
@@ -355,7 +355,7 @@ public abstract class Failing_Scripts(IGrateTestContext context, ITestOutputHelp
             var ex = await Assert.ThrowsAsync<MigrationFailed>(migrator.Migrate);
             ex.Should().NotBeNull();
         }
-        
+
 
         string[] versions;
         string sql = $"SELECT status FROM {Context.Syntax.TableWithSchema(config.SchemaName, config.VersionTableName)}";
@@ -368,7 +368,7 @@ public abstract class Failing_Scripts(IGrateTestContext context, ITestOutputHelp
 
         versions.Should().HaveCount(1);
         versions.Single().Should().Be(MigrationStatus.Error);
-        
+
         //await Context.DropDatabase(db);
     }
 
@@ -383,7 +383,7 @@ public abstract class Failing_Scripts(IGrateTestContext context, ITestOutputHelp
         var knownFolders = Folders;
         CreateDummySql(root, folder, filename);
         CreateInvalidSql(root, knownFolders[Up]);
-        
+
         var config = GrateConfigurationBuilder.Create(Context.DefaultConfiguration)
             .WithConnectionString(Context.ConnectionString(db))
             .WithFolders(knownFolders)

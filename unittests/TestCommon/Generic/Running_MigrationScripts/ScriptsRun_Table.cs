@@ -2,18 +2,17 @@
 using FluentAssertions;
 using grate.Configuration;
 using TestCommon.TestInfrastructure;
-using Xunit.Abstractions;
 using static grate.Configuration.KnownFolderKeys;
 
 namespace TestCommon.Generic.Running_MigrationScripts;
 
-public abstract class ScriptsRun_Table(IGrateTestContext context, ITestOutputHelper testOutput) 
+public abstract class ScriptsRun_Table(IGrateTestContext context, ITestOutputHelper testOutput)
     : MigrationsScriptsBase(context, testOutput)
 {
-    protected ScriptsRun_Table(): this(null!, null!)
+    protected ScriptsRun_Table() : this(null!, null!)
     {
     }
-    
+
     [Fact]
     public async Task Includes_the_folder_name_in_the_script_name_if_subfolders()
     {
@@ -27,7 +26,7 @@ public abstract class ScriptsRun_Table(IGrateTestContext context, ITestOutputHel
         string filename = "any_filename.sql";
 
         CreateDummySql(folder, filename);
-        
+
         var config = GrateConfigurationBuilder.Create(Context.DefaultConfiguration)
             .WithConnectionString(Context.ConnectionString(db))
             .WithFolders(knownFolders)
@@ -49,7 +48,7 @@ public abstract class ScriptsRun_Table(IGrateTestContext context, ITestOutputHel
 
         var expectedName = $"sub/folder/long/way/{filename}";
         scripts.First().Should().Be(expectedName);
-        
+
         //await Context.DropDatabase(db);
     }
 
@@ -85,7 +84,7 @@ public abstract class ScriptsRun_Table(IGrateTestContext context, ITestOutputHel
         }
 
         scripts.First().Should().Be(filename);
-        
+
         //await Context.DropDatabase(db);
     }
 
@@ -141,7 +140,7 @@ public abstract class ScriptsRun_Table(IGrateTestContext context, ITestOutputHel
             second.script_name.Should().Be($"sub/dolder/gong/way/{filename}");
             second.text_of_script.Should().Be(Context.Syntax.CurrentDatabase);
         });
-        
+
         //await Context.DropDatabase(db);
     }
 
@@ -158,7 +157,7 @@ public abstract class ScriptsRun_Table(IGrateTestContext context, ITestOutputHel
         const string filename = "large_file.sql";
 
         CreateLargeDummySql(folder, filename: filename);
-        
+
         var config = GrateConfigurationBuilder.Create(Context.DefaultConfiguration)
             .WithConnectionString(Context.ConnectionString(db))
             .WithFolders(knownFolders)
@@ -170,7 +169,7 @@ public abstract class ScriptsRun_Table(IGrateTestContext context, ITestOutputHel
             await migrator.Migrate();
         }
 
-        string fileContent = await File.ReadAllTextAsync(Path.Combine(folder.ToString(), filename));
+        string fileContent = await File.ReadAllTextAsync(Path.Combine(folder.ToString(), filename), TestContext.Current.CancellationToken);
 
         string[] scripts;
         string sql = $"SELECT text_of_script FROM {Context.Syntax.TableWithSchema("grate", "ScriptsRun")}";
@@ -181,7 +180,7 @@ public abstract class ScriptsRun_Table(IGrateTestContext context, ITestOutputHel
         }
 
         scripts.First().Should().Be(fileContent);
-        
+
         //await Context.DropDatabase(db);
     }
 
