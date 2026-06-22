@@ -75,7 +75,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Hosting"  />
-    <PackageReference Include="System.CommandLine.NamingConventionBinder" />
+    <PackageReference Include="System.CommandLine" />
     <PackageReference Include="Microsoft.Data.SqlClient" />
     <PackageReference Include="Dapper" />
   </ItemGroup>

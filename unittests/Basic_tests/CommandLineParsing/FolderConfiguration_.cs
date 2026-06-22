@@ -1,7 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.CommandLine.Invocation;
-using System.CommandLine.NamingConventionBinder;
-using System.CommandLine.Parsing;
 using System.Runtime.CompilerServices;
 using FluentAssertions;
 using grate.Commands;
@@ -25,7 +22,7 @@ public class FolderConfiguration_
 
         AssertEquivalent(expected.Values, actual?.Values);
     }
-    
+
     [Fact]
     public async Task Default_with_overridden_transaction_handling_for_one_folder()
     {
@@ -33,7 +30,7 @@ public class FolderConfiguration_
 
         var expected = FoldersConfiguration.Default();
         expected[RunAfterCreateDatabase] = expected[RunAfterCreateDatabase]! with { TransactionHandling = TransactionHandling.Autonomous };
-        
+
         var actual = cfg?.Folders;
         actual![RunAfterCreateDatabase]!.TransactionHandling.Should().Be(TransactionHandling.Autonomous);
         AssertEquivalent(expected.Values, actual.Values);
@@ -117,16 +114,12 @@ public class FolderConfiguration_
     }
 
 
-    private static async Task<GrateConfiguration?> ParseGrateConfiguration(params string[] commandline)
+    private static Task<GrateConfiguration?> ParseGrateConfiguration(params string[] commandline)
     {
-        GrateConfiguration? cfg = null;
-        var cmd = CommandHandler.Create((GrateConfiguration config) => cfg = config);
-
         var migrateCommand = new MigrateCommand(null!);
-        ParseResult p = new Parser(migrateCommand).Parse(commandline);
-        await cmd.InvokeAsync(new InvocationContext(p));
+        var parseResult = migrateCommand.Parse(commandline);
 
-        return cfg;
+        return Task.FromResult<GrateConfiguration?>(migrateCommand.GetConfiguration(parseResult));
     }
 
     private static KnownFolderNamesWithDescription? Wrap(KnownFolderNames? names, [CallerArgumentExpression(nameof(names))] string description = "") =>

@@ -4,17 +4,13 @@ using grate.Configuration;
 using grate.Infrastructure;
 using grate.Migration;
 using NSubstitute;
-
-#if NET6_0
-using Dir = TestCommon.TestInfrastructure.Net6PolyFills.Directory;
-#else
 using Dir = System.IO.Directory;
-#endif
+
 
 namespace Basic_tests.GrateMigrator_MigrationStatus;
 
 // ReSharper disable once InconsistentNaming
-public class MigrationStatus_: IDisposable
+public class MigrationStatus_ : IDisposable
 {
     private static readonly DirectoryInfo SqlFilesDirectory = Dir.CreateTempSubdirectory();
 
@@ -38,7 +34,7 @@ public class MigrationStatus_: IDisposable
         {
             var parent = Path.Combine(SqlFilesDirectory.ToString(), "up");
             Directory.CreateDirectory(parent);
-            
+
             var fullPath = Path.Combine(parent, filename);
             File.WriteAllText(fullPath, content);
         }

@@ -1,32 +1,27 @@
-﻿using System.CommandLine;
-using System.CommandLine.Invocation;
-using System.CommandLine.NamingConventionBinder;
-using System.CommandLine.Parsing;
-using System.Configuration;
+﻿using System.Configuration;
 using FluentAssertions;
 using grate.Commands;
 using grate.Configuration;
 using grate.Exceptions;
 using grate.Infrastructure;
-
-#if NET6_0
-using Dir = TestCommon.TestInfrastructure.Net6PolyFills.Directory;
-#else
 using Dir = System.IO.Directory;
-#endif
 
 namespace Basic_tests.CommandLineParsing;
 
 // ReSharper disable once InconsistentNaming
 public class Basic_CommandLineParsing
 {
-    [Fact]
-    public void ParserIsConfiguredCorrectly()
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("-ct=100")]
+    public void ParserIsConfiguredCorrectly(string commandline)
     {
-        // Test that the parser configuration is valid, see https://github.com/dotnet/command-line-api/issues/1613
         var command = new MigrateCommand(null!);
-        var configuration = new CommandLineConfiguration(command);
-        configuration.ThrowIfInvalid();
+        var parseResult = command.Parse(commandline);
+        Assert.NotNull(parseResult.Errors);
+        Assert.Single(parseResult.Errors);
+        Assert.Equal("Option '--connectionstring' is required.", parseResult.Errors[0].Message);
     }
 
     [Theory]
@@ -188,8 +183,8 @@ public class Basic_CommandLineParsing
 
         cfg?.Transaction.Should().Be(false);
     }
-    
-    
+
+
     /// <summary>
     /// We can use multiple environments, separated by space, ; or ,
     /// This makes it possible to create orhotogonal environments, and run scripts
@@ -221,16 +216,16 @@ public class Basic_CommandLineParsing
     /// <param name="expected"></param>
 
     [Theory]
-    [InlineData("--env KASHMIR", new[] {"KASHMIR"})]
-    [InlineData("--env JALLA", new[] {"JALLA"})]
-    [InlineData("--env JALLA KASHMIR", new[] {"JALLA", "KASHMIR"})]
-    [InlineData("--env JALLA,BERGEN", new[] {"JALLA", "BERGEN"})]
-    [InlineData("--env Dev;Azure;OnlyOnMondays", new[] {"Dev", "Azure", "OnlyOnMondays"})]
-    [InlineData("--env Customer1;Azure;Dev", new[] {"Customer1", "Azure", "Dev"})]
-    [InlineData("--env Customer1;Azure;Test", new[] {"Customer1", "Azure", "Test"})]
-    [InlineData("--env Customer2;Azure;Dev", new[] {"Customer2", "Azure", "Dev"})]
-    [InlineData("--env Customer2;Aws;QA", new[] {"Customer2", "Aws", "QA"})]
-    [InlineData("--env Customer2;Azure;Prod", new[] {"Customer2", "Azure", "Prod"})]
+    [InlineData("--env KASHMIR", new[] { "KASHMIR" })]
+    [InlineData("--env JALLA", new[] { "JALLA" })]
+    [InlineData("--env JALLA KASHMIR", new[] { "JALLA", "KASHMIR" })]
+    [InlineData("--env JALLA,BERGEN", new[] { "JALLA", "BERGEN" })]
+    [InlineData("--env Dev;Azure;OnlyOnMondays", new[] { "Dev", "Azure", "OnlyOnMondays" })]
+    [InlineData("--env Customer1;Azure;Dev", new[] { "Customer1", "Azure", "Dev" })]
+    [InlineData("--env Customer1;Azure;Test", new[] { "Customer1", "Azure", "Test" })]
+    [InlineData("--env Customer2;Azure;Dev", new[] { "Customer2", "Azure", "Dev" })]
+    [InlineData("--env Customer2;Aws;QA", new[] { "Customer2", "Aws", "QA" })]
+    [InlineData("--env Customer2;Azure;Prod", new[] { "Customer2", "Azure", "Prod" })]
     public async Task Environments(string argName, IEnumerable<string> expected)
     {
         var commandline = argName;
@@ -384,7 +379,7 @@ public class Basic_CommandLineParsing
         var cfg = await ParseGrateConfiguration(args);
         cfg?.IgnoreDirectoryNames.Should().Be(expected);
     }
-    
+
     [Theory]
     [InlineData("", false)]
     [InlineData("--isuptodate", true)]
@@ -397,7 +392,7 @@ public class Basic_CommandLineParsing
         cfg?.UpToDateCheck.Should().Be(expected);
     }
 
-    private static async Task<CommandLineGrateConfiguration?> ParseGrateConfiguration(string commandline)
+    private static Task<CommandLineGrateConfiguration?> ParseGrateConfiguration(string commandline)
     {
         // All parsing fails if the connectionstring is not supplied, so we need to add it here, if it's not in the commandline.
         if (
@@ -409,19 +404,15 @@ public class Basic_CommandLineParsing
             commandline += " -c \"Server=.;Database=master;Trusted_Connection=True;\"";
         }
 
-        CommandLineGrateConfiguration? cfg = null;
-        var cmd = CommandHandler.Create((CommandLineGrateConfiguration config) => cfg = config);
+        var command = new MigrateCommand(null!);
+        var parseResult = command.Parse(commandline);
 
-        ParseResult p =
-            new Parser(new MigrateCommand(null!)).Parse(commandline);
-
-        if (p.Errors.Any())
+        if (parseResult.Errors.Any())
         {
-            var exceptions = p.Errors.Select(error => new ConfigurationErrorsException(error.Message)).ToList();
+            var exceptions = parseResult.Errors.Select(error => new ConfigurationErrorsException(error.Message)).ToList();
             throw new MigrationFailed(exceptions);
         }
 
-        await cmd.InvokeAsync(new InvocationContext(p));
-        return cfg;
+        return Task.FromResult<CommandLineGrateConfiguration?>(command.GetConfiguration(parseResult));
     }
 }

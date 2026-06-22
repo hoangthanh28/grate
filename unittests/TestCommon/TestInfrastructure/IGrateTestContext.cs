@@ -1,16 +1,8 @@
 ﻿using System.Data;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using grate.Configuration;
 using grate.Infrastructure;
 using grate.Migration;
-using Microsoft.Extensions.Logging;
-
-#if NET6_0
-using Dir = TestCommon.TestInfrastructure.Net6PolyFills.Directory;
-#else
 using Dir = System.IO.Directory;
-#endif
 
 namespace TestCommon.TestInfrastructure;
 
@@ -19,7 +11,7 @@ public interface IGrateTestContext
     string AdminConnectionString { get; }
     string ConnectionString(string database);
     string UserConnectionString(string database);
-    
+
     IGrateTestContext External => this;
 
     IDbConnection CreateAdminDbConnection() => GetDbConnection(AdminConnectionString);
@@ -50,7 +42,7 @@ public interface IGrateTestContext
 
 
     public IGrateMigrator Migrator { get; }
-    
+
     //public bool SupportsSchemas => Migrator.SupportsSchemas();
 
     bool SupportsCreateDatabase { get; }
