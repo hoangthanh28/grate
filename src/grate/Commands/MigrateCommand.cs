@@ -122,7 +122,7 @@ internal sealed class MigrateCommand : RootCommand
     }
 
     //REQUIRED OPTIONS
-    private static readonly Option<string> ConnectionString =
+    private readonly Option<string> ConnectionString =
         new("--connectionstring", "-c", "-cs", "--connstring")
         {
             Description = "You now provide an entire connection string. ServerName and Database are obsolete.",
@@ -131,7 +131,7 @@ internal sealed class MigrateCommand : RootCommand
 
 
     //CONNECTIONSTRING OPTIONS
-    private static readonly Option<string> AdminConnectionString =
+    private readonly Option<string> AdminConnectionString =
         new("--adminconnectionstring", "-csa", "-a", "-acs", "--adminconnstring")
         {
             Description = "The connection string for connecting to master, if you want to create the database.  Defaults to the same as --connstring.",
@@ -140,21 +140,21 @@ internal sealed class MigrateCommand : RootCommand
 
 
     //DIRECTORY OPTIONS
-    private static readonly Option<DirectoryInfo> SqlFilesDirectory =
+    private readonly Option<DirectoryInfo> SqlFilesDirectory =
         new Option<DirectoryInfo>("--sqlfilesdirectory", "-f", "--files")
         {
             Description = "The directory where your SQL scripts are",
             DefaultValueFactory = _ => new DirectoryInfo(DefaultFilesDirectory)
         }.AcceptExistingOnly();
 
-    private static readonly Option<DirectoryInfo> OutputPath =
+    private readonly Option<DirectoryInfo> OutputPath =
         new("--outputPath", "-o", "--output")
         {
             Description = "This is where everything related to the migration is stored. This includes any backups, all items that ran, permission dumps, logs, etc.",
             DefaultValueFactory = _ => new DirectoryInfo(DefaultOutputPath)
         };
 
-    private static readonly Option<IFoldersConfiguration?> Folders =
+    private readonly Option<IFoldersConfiguration?> Folders =
         new("--folders")
         {
             CustomParser = result =>
@@ -220,7 +220,7 @@ the last one will expect the folders to be named 'folder1', 'folder2', and 'fold
 
 
     //SECURITY OPTIONS
-    private static readonly Option<string> AccessToken =
+    private readonly Option<string> AccessToken =
         new("--accesstoken")
         {
             Description = "Access token to be used for logging in to SQL Server / Azure SQL Database."
@@ -228,14 +228,14 @@ the last one will expect the folders to be named 'folder1', 'folder2', and 'fold
 
 
     //TIMEOUT OPTIONS
-    private static readonly Option<int> CommandTimeout =
+    private readonly Option<int> CommandTimeout =
         new("--commandtimeout", "-ct")
         {
             Description = "This is the timeout when commands are run. This is not for admin commands or restore.",
             DefaultValueFactory = _ => DefaultCommandTimeout
         };
 
-    private static readonly Option<int> CommandTimeoutAdmin =
+    private readonly Option<int> CommandTimeoutAdmin =
         new("--admincommandtimeout", "-cta")
         {
             Description = "This is the timeout when administration commands are run (except for restore, which has its own).",
@@ -243,33 +243,33 @@ the last one will expect the folders to be named 'folder1', 'folder2', and 'fold
         };
 
     //DATABASE OPTIONS
-    private static readonly Option<DatabaseType> DatabaseType =
+    private readonly Option<DatabaseType> DatabaseType =
         new("--databasetype", "--dt", "--dbt")
         {
             Description = "TELLS GRATE WHAT TYPE OF DATABASE IT IS RUNNING ON.",
             DefaultValueFactory = _ => Configuration.DatabaseType.SQLServer
         };
 
-    private static readonly Option<bool> RunInTransaction =
+    private readonly Option<bool> RunInTransaction =
         new("--transaction", "--trx", "-t")
         {
             Description = "Run the migration in a transaction"
         };
 
-    private static readonly Option<string> SchemaName =
+    private readonly Option<string> SchemaName =
         new("--schemaname", "--sc", "--schema")
         {
             Description = "The schema to use for the migration tables",
             DefaultValueFactory = _ => "grate"
         };
 
-    private static readonly Option<bool> Drop =
+    private readonly Option<bool> Drop =
         new("--drop")
         {
             Description = "Drop - This instructs grate to remove the target database.  Unlike RoundhousE grate will continue to run the migration scripts after the drop."
         };
 
-    private static readonly Option<bool> CreateDatabase =
+    private readonly Option<bool> CreateDatabase =
         new("--createdatabase", "--create")
         {
             Description = "Create - This instructs grate to create the target database if it does not exist.  Defaults to true.  Set to false to emulate the --donotcreatedatabase flag in roundhouse.",
@@ -278,7 +278,7 @@ the last one will expect the folders to be named 'folder1', 'folder2', and 'fold
 
 
     //ENVIRONMENT OPTIONS
-    private static readonly Option<CommandLineGrateEnvironment?> Environments =
+    private readonly Option<CommandLineGrateEnvironment?> Environments =
         new("--environment", "--env")
         {
             // A custom parser is needed to support combining environments separated by space, ',' or ';'.
@@ -291,13 +291,13 @@ the last one will expect the folders to be named 'folder1', 'folder2', and 'fold
 
 
     //WARNING OPTIONS
-    private static readonly Option<bool> WarnAndRunOnScriptChange =
+    private readonly Option<bool> WarnAndRunOnScriptChange =
         new("--warnononetimescriptchanges", "-w")
         {
             Description = "WarnOnOneTimeScriptChanges - Instructs grate to execute changed one time scripts(DDL / DML in Up folder) that have previously been run against the database instead of failing.  A warning is logged for each one time script that is rerun. Defaults to false."
         };
 
-    private static readonly Option<bool> WarnAndIgnoreOnScriptChange =
+    private readonly Option<bool> WarnAndIgnoreOnScriptChange =
         new("--warnandignoreononetimescriptchanges")
         {
             Description = "WarnAndIgnoreOnOneTimeScriptChanges - Instructs grate to ignore and update the hash of changed one time scripts (DDL/DML in Up folder) that have previously been run against the database instead of failing. A warning is logged for each one time scripts that is rerun. Defaults to false."
@@ -305,7 +305,7 @@ the last one will expect the folders to be named 'folder1', 'folder2', and 'fold
 
 
     //TOKEN OPTIONS
-    private static readonly Option<bool> Tokens =
+    private readonly Option<bool> Tokens =
         new("--disabletokenreplacement", "--disabletokens")
         {
             Description = "Tokens - This instructs grate to not perform token replacement ({{somename}}). Defaults to false."
@@ -319,13 +319,13 @@ the last one will expect the folders to be named 'folder1', 'folder2', and 'fold
 
 
     //SCRIPT OPTIONS
-    private static readonly Option<bool> DoNotStoreScriptText =
+    private readonly Option<bool> DoNotStoreScriptText =
         new("--donotstorescriptsruntext")
         {
             Description = "DoNotStoreScriptsRunText - This instructs grate to not store the full script text in the database. Defaults to false."
         };
 
-    private static readonly Option<bool> RunAllAnyTimeScripts =
+    private readonly Option<bool> RunAllAnyTimeScripts =
         new("--runallanytimescripts", "--forceanytimescripts")
         {
             Description = "RunAllAnyTimeScripts - This instructs grate to run any time scripts every time it is run even if they haven't changed. Defaults to false."
@@ -333,37 +333,37 @@ the last one will expect the folders to be named 'folder1', 'folder2', and 'fold
 
 
     //MISC OPTIONS
-    private static readonly Option<bool> Baseline =
+    private readonly Option<bool> Baseline =
         new("--baseline")
         {
             Description = "Baseline - This instructs grate to mark the scripts as run, but not to actually run anything against the database. Use this option if you already have scripts that have been run through other means (and BEFORE you start the new ones)."
         };
 
-    private static readonly Option<bool> DryRun =
+    private readonly Option<bool> DryRun =
         new("--dryrun")
         {
             Description = " DryRun - This instructs grate to log what would have run, but not to actually run anything against the database.  Use this option if you are trying to figure out what grate is going to do."
         };
 
-    private static readonly Option<string> Restore =
+    private readonly Option<string> Restore =
         new("--restore")
         {
             Description = " Restore - This instructs grate where to get the backed up database file. Defaults to NULL."
         };
 
-    private static readonly Option<bool> Silent =
+    private readonly Option<bool> Silent =
         new("--noninteractive", "-ni", "--ni", "--silent")
         {
             Description = "Silent - tells grate not to ask for any input when it runs."
         };
 
-    private static readonly Option<string> RepositoryPath =
+    private readonly Option<string> RepositoryPath =
         new("--repositorypath", "-r", "--repo")
         {
             Description = "Repository Path - The repository. A string that can be anything. Used to track versioning along with the version. Defaults to NULL."
         };
 
-    private static readonly Option<string> Version =
+    private readonly Option<string> Version =
         new("--version")
         {
             Description = "Database Version - specify the version of the current migration directly on the command line."
@@ -371,32 +371,32 @@ the last one will expect the folders to be named 'folder1', 'folder2', and 'fold
 
 
     //OBSOLETE OPTIONS
-    private static readonly Option<string> Database =
+    private readonly Option<string> Database =
         new("--database")
         {
             Description = "OBSOLETE: Please specify the connection string instead",
             Required = false
         };
 
-    private static readonly Option<string> ServerName =
+    private readonly Option<string> ServerName =
         new("--servername", "--instance", "--server", "-s")
         {
             Description = "OBSOLETE: Please specify the connection string instead."
         };
 
-    private static readonly Option<bool> IgnoreDirectoryNames =
+    private readonly Option<bool> IgnoreDirectoryNames =
         new("--ignoredirectorynames", "--searchallinsteadoftraverse", "--searchallsubdirectoriesinsteadoftraverse")
         {
             Description = "IgnoreDirectoryNames - By default, scripts are ordered by relative path including subdirectories. This option searches subdirectories, but order is based on filename alone."
         };
 
-    private static readonly Option<bool> UpToDateCheck =
+    private readonly Option<bool> UpToDateCheck =
         new("--uptodatecheck", "--isuptodate")
         {
             Description = "Outputs whether the database is up to date or not (whether any non-everytime scripts would be run)"
         };
 
-    private static readonly Option<LogLevel> Verbosity =
+    private readonly Option<LogLevel> Verbosity =
         new("--verbosity", "-v")
         {
             Description = "Verbosity level (as defined here: https://docs.microsoft.com/dotnet/api/Microsoft.Extensions.Logging.LogLevel)"
