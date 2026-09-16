@@ -12,3 +12,18 @@ Simply `docker-compose up` to:
 
 - You wouldn't normally do db migrations using compose, this is just an example.
 
+
+## Want to adding more grate options
+
+You can easily extend the support command using entrypoint mount in the docker. 2 options belows
+
+### Option 1: Adding the additional flags when invoking the container (for example: warnandignoreononetimescriptchanges and verbosity)
+```sh
+docker run --rm -v $(pwd)/db:/db -v $(pwd)/output:/output erikbra/grate:latest --warnandignoreononetimescriptchanges=true --verbosity=Trace
+```
+
+### Option 2: Using a custom entrypoint script in restricted environment (for example `my-entrypoint.sh`)
+```sh
+chmod +x my-entrypoint.sh
+docker run --rm -v $(pwd)/db:/db -v $(pwd)/output:/output -v $(pwd)/my-entrypoint.sh:/app/entrypoint.sh erikbra/grate:latest
+```
